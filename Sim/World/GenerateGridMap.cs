@@ -47,8 +47,6 @@ public class GridMapGenerator : MonoBehaviour
             Vector3 intersection = NodeToWorld(node, scale);
             Instantiate(intersectionPrefab, intersection, Quaternion.identity, transform)
                 .name = $"Intersection {node}";
-
-            // print("built intersection: " + node + "\n");
         }
 
         // 3) create roads
@@ -59,16 +57,16 @@ public class GridMapGenerator : MonoBehaviour
 
             var road = Instantiate(roadPrefab, (a + b) * 0.5f, Quaternion.identity, transform);
             road.name = $"Road {edge.Source} to {edge.Target}";
-            road.transform.LookAt(b);
+            road.transform.rotation = 
+                Quaternion.LookRotation(b - a, Vector3.up)
+                * Quaternion.Euler(0, 90, 0); // rotate to face the direction of the road
             
-            float length = Vector3.Distance(a, b);
+            float length = Vector3.Distance(a, b) - 1f;
             road.transform.localScale = new Vector3(
-                road.transform.localScale.x,
+                length * 0.1f,
                 road.transform.localScale.y,
-                length
+                road.transform.localScale.z
             );
-
-            // print("built intersection: " + edge.Source + " to " + edge.Target + "\n");
         }
     }
 
