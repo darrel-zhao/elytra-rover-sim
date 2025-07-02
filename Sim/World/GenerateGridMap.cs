@@ -54,6 +54,14 @@ public class GridMapGenerator : MonoBehaviour
             SpawnRoad(edge.Source, edge.Target, scale);
     }
 
+    // ***HELPER FUNCTIONS*** //
+
+    /// <summary>
+    /// Converts a node index into a world position.
+    /// </summary>
+    /// <param name="node"></param>
+    /// <param name="dist"></param>
+    /// <returns>a 3D position (Vector3)</returns>
     Vector3 NodeToWorld(int node, float dist)
     {
         float i = (node / width) * dist; // calculate row position
@@ -61,6 +69,12 @@ public class GridMapGenerator : MonoBehaviour
         return new Vector3(j, 0f, i);
     }
 
+/// <summary>
+/// Spawns a road between two nodes in the grid. Handles the rotation and scaling of the road prefab.
+/// </summary>
+/// <param name="src"></param>
+/// <param name="dst"></param>
+/// <param name="scale"></param>
     void SpawnRoad(int src, int dst, float scale)
     {
         Vector3 a = NodeToWorld(src, scale);
@@ -91,6 +105,10 @@ public class GridMapGenerator : MonoBehaviour
         renderer.SetPropertyBlock(block);
     }
 
+/// <summary>
+/// Clears the current map by destroying all child objects of this GameObject.
+/// This is useful for regenerating the map without creating duplicates.
+/// </summary>
     void ClearMap()
     {
         // iterate backwards to avoid indexing issues when removing children
