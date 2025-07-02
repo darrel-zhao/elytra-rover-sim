@@ -51,23 +51,7 @@ public class GridMapGenerator : MonoBehaviour
 
         // 3) create roads
         foreach (var edge in graph.Edges)
-        {
-            Vector3 a = NodeToWorld(edge.Source, scale);
-            Vector3 b = NodeToWorld(edge.Target, scale);
-
-            var road = Instantiate(roadPrefab, (a + b) * 0.5f, Quaternion.identity, transform);
-            road.name = $"Road {edge.Source} to {edge.Target}";
-            road.transform.rotation = 
-                Quaternion.LookRotation(b - a, Vector3.up)
-                * Quaternion.Euler(0, 90, 0); // rotate to face the direction of the road
-            
-            float length = Vector3.Distance(a, b) - 1f;
-            road.transform.localScale = new Vector3(
-                length * 0.1f,
-                road.transform.localScale.y,
-                road.transform.localScale.z
-            );
-        }
+            SpawnRoad(edge.Source, edge.Target, scale);
     }
 
     Vector3 NodeToWorld(int node, float dist)
@@ -75,6 +59,36 @@ public class GridMapGenerator : MonoBehaviour
         float i = (node / width) * dist; // calculate row position
         float j = (node % width) * dist; // calculate column position
         return new Vector3(j, 0f, i);
+    }
+
+    void SpawnRoad(int src, int dst, float scale)
+    {
+        Vector3 a = NodeToWorld(src, scale);
+        Vector3 b = NodeToWorld(dst, scale);
+
+        var road = Instantiate(roadPrefab, (a + b) * 0.5f, Quaternion.identity, transform);
+        road.name = $"Road {src} to {dst}";
+        road.transform.rotation =
+            Quaternion.LookRotation(b - a)
+            * Quaternion.Euler(0, 90, 0); // rotate to face the direction of the road
+
+        float length = Vector3.Distance(a, b) - 1f;
+        road.transform.localScale = new Vector3(
+            length * 0.1f,
+            road.transform.localScale.y,
+            road.transform.localScale.z
+        );
+
+        // Render material using MaterialPropertyBlock
+        var renderer = road.GetComponent<Renderer>();
+        var block = new MaterialPropertyBlock();
+
+        // Get the current property block
+        renderer.GetPropertyBlock(block);
+
+        // Edit it, then set it back onto the renderer
+        block.SetVector("_BaseColorMap_ST", new Vector4(length, 1f, 0f, 0f));
+        renderer.SetPropertyBlock(block);
     }
 
     void ClearMap()
