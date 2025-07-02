@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 58f5f6fa8191a36479b1f16bf95aa976
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - intersectionPrefab: {fileID: 422152240820536051, guid: 126aabfd793e8ec4ca7b09e42ac62c7a, type: 3}
+  - roadPrefab: {fileID: 1396628577756645843, guid: 5adc2965dd6472449914cf70b4e404c8, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
