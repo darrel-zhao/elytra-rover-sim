@@ -16,6 +16,7 @@ public class GridMapGenerator : MonoBehaviour
     public GameObject intersectionPrefab;
     public GameObject roadPrefab;
 
+    float scale = 30f; // scale for the grid
     void Start()
     {
         BuildMap();
@@ -39,19 +40,18 @@ public class GridMapGenerator : MonoBehaviour
         // generate graph
         var world = new World(height, width);
         var graph = world.generateGridWorld();
-        float scale = 5f; // scale for the grid
 
         // 2) create intersections 
         foreach (int node in graph.Vertices)
         {
-            Vector3 intersection = NodeToWorld(node, scale);
+            Vector3 intersection = NodeToWorld(node);
             Instantiate(intersectionPrefab, intersection, Quaternion.identity, transform)
                 .name = $"Intersection {node}";
         }
 
         // 3) create roads
         foreach (var edge in graph.Edges)
-            SpawnRoad(edge.Source, edge.Target, scale);
+            SpawnRoad(edge.Source, edge.Target);
     }
 
     // ***HELPER FUNCTIONS*** //
@@ -62,10 +62,10 @@ public class GridMapGenerator : MonoBehaviour
     /// <param name="node"></param>
     /// <param name="dist"></param>
     /// <returns>a 3D position (Vector3)</returns>
-    Vector3 NodeToWorld(int node, float dist)
+    public Vector3 NodeToWorld(int node)
     {
-        float i = (node / width) * dist; // calculate row position
-        float j = (node % width) * dist; // calculate column position
+        float i = (node / width) * scale; // calculate row position
+        float j = (node % width) * scale; // calculate column position
         return new Vector3(j, 0f, i);
     }
 
@@ -75,10 +75,10 @@ public class GridMapGenerator : MonoBehaviour
 /// <param name="src"></param>
 /// <param name="dst"></param>
 /// <param name="scale"></param>
-    void SpawnRoad(int src, int dst, float scale)
+    void SpawnRoad(int src, int dst)
     {
-        Vector3 a = NodeToWorld(src, scale);
-        Vector3 b = NodeToWorld(dst, scale);
+        Vector3 a = NodeToWorld(src);
+        Vector3 b = NodeToWorld(dst);
 
         var road = Instantiate(roadPrefab, (a + b) * 0.5f, Quaternion.identity, transform);
         road.name = $"Road {src} to {dst}";
@@ -86,7 +86,7 @@ public class GridMapGenerator : MonoBehaviour
             Quaternion.LookRotation(b - a)
             * Quaternion.Euler(0, 90, 0); // rotate to face the direction of the road
 
-        float length = Vector3.Distance(a, b) - 1f;
+        float length = Vector3.Distance(a, b) - 4f;
         road.transform.localScale = new Vector3(
             length * 0.1f,
             road.transform.localScale.y,
@@ -101,7 +101,7 @@ public class GridMapGenerator : MonoBehaviour
         renderer.GetPropertyBlock(block);
 
         // Edit it, then set it back onto the renderer
-        block.SetVector("_BaseColorMap_ST", new Vector4(length, 1f, 0f, 0f));
+        block.SetVector("_BaseColorMap_ST", new Vector4(length / 4, 1f, 0f, 0f));
         renderer.SetPropertyBlock(block);
     }
 
