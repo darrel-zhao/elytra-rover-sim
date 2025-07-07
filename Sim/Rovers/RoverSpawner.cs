@@ -9,7 +9,7 @@ public class RoverSpawner : MonoBehaviour
     public int startNode = 0;
 
     // Rover should spawn at this height above the ground
-    float spawnYOffset = 0.07f;
+    float spawnYOffset = 0.01f;
 
     int roverCount = 0;
 

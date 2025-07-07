@@ -19,6 +19,8 @@ public class GridMapGenerator : MonoBehaviour
     float scale = 30f; // scale for the grid
     void Start()
     {
+        // clear old map
+        ClearMap();
         BuildMap();
     }
 
@@ -34,9 +36,6 @@ public class GridMapGenerator : MonoBehaviour
 
     void BuildMap()
     {
-        // clear old map
-        ClearMap();
-
         // generate graph
         var world = new World(height, width);
         var graph = world.generateGridWorld();
@@ -114,7 +113,7 @@ public class GridMapGenerator : MonoBehaviour
         // iterate backwards to avoid indexing issues when removing children
         for (int i = transform.childCount - 1; i >= 0; i--)
         {
-            print("destroying child: " + i + "\n");
+            //print("destroying child: " + i + "\n");
             var c = transform.GetChild(i).gameObject;
             #if UNITY_EDITOR
                 DestroyImmediate(c);
