@@ -5,8 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class SimpleRoverDrive : MonoBehaviour
 {
-    float moveSpeed = 5f;
-    float turnSpeed = 100f;
+    float moveSpeed = 1f;
+    float turnSpeed = 50f;
     Rigidbody rb;
 
     void Awake()
