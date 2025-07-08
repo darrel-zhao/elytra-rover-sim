@@ -1,5 +1,6 @@
 using UnityEngine;
 using Sim.World;
+using QuickGraph;
 
 [ExecuteAlways]
 
@@ -12,6 +13,11 @@ public class GridMapGenerator : MonoBehaviour
     [Header("Grid Prefab")]
     public GameObject intersectionPrefab;
     public GameObject roadPrefab;
+
+    // Parameters
+    public int numNodes;
+    public World world;
+    public UndirectedGraph<int, TaggedEdge<int, double>> graph;
 
     float scale = 30f; // scale for the grid
     void Start()
@@ -34,8 +40,9 @@ public class GridMapGenerator : MonoBehaviour
     void BuildMap()
     {
         // generate graph
-        var world = new World(height, width);
-        var graph = world.generateGridWorld();
+        world = new World(height, width);
+        graph = world.generateGridWorld();
+        numNodes = height * width;
 
         // 2) create intersections 
         foreach (int node in graph.Vertices)

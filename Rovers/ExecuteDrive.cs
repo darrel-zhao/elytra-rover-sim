@@ -26,18 +26,18 @@ public class ExecuteDrive : MonoBehaviour
         // Move forward
         Vector3 forward = transform.forward * moveSpeed * Time.deltaTime;
         rb.MovePosition(rb.position + forward);
+        IsAtIntersection();
 
         // Check for intersection and turn randomly
-        if (IsAtIntersection())
-        {
-            TurnRandomly();
-        }
+        // if (IsAtIntersection())
+        // {
+        //     TurnRandomly();
+        // }
     }
 
     private bool IsAtIntersection()
     {
-        // Placeholder for intersection detection logic
-        return false; // Replace with actual intersection detection
+        return false;
     }
 
     private void TurnRandomly()

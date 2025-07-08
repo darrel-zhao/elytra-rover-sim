@@ -6,6 +6,9 @@ public class RoverSpawner : MonoBehaviour
     [Header("Rover Prefab")]
     public GameObject roverPrefab;
 
+    [Header("Number of Roveres")]
+    public int numRovers = 1;
+
     // Rover should spawn at this height above the ground
     float spawnYOffset = 0.01f;
 
