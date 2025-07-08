@@ -1,7 +1,6 @@
 using JetBrains.Annotations;
 using UnityEngine;
 
-
 [RequireComponent(typeof(Rigidbody))]
 public class SimpleRoverDrive : MonoBehaviour
 {
