@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// This script handles the driving a single rover within the simulation. The rover will move forward 
@@ -32,15 +33,12 @@ public class ExecuteDrive : MonoBehaviour
 
         // Calculate the current angle of rotation
         float currentYRotation = transform.rotation.eulerAngles.y;
-        float angleDelta = Mathf.DeltaAngle(originalYRotation, currentYRotation);
 
         // Check for intersection and turn randomly
-        if (IsAtIntersection() && Mathf.Abs(angleDelta) < 90f)
+        if (IsAtIntersection())
         {
             TurnRight();
         }
-
-        print(currentYRotation);
     }
 
     private bool IsAtIntersection()
@@ -57,10 +55,22 @@ public class ExecuteDrive : MonoBehaviour
         return false; // Not at an intersection
     }
 
-    private void TurnRight()
+    private void TurnRight(float turnAngle = 90f)
     {
+        float currentYRotation = transform.rotation.eulerAngles.y;
         Quaternion turn = Quaternion.Euler(0f, turnSpeed * 2f * Time.deltaTime, 0f);
-        rb.MoveRotation(rb.rotation * turn);
+        float currentAngle = (rb.rotation * turn).eulerAngles.y;
+
+        if (currentAngle < turnAngle)
+        {
+            rb.MoveRotation(rb.rotation * turn);
+        }
+        else if (currentAngle > turnAngle)
+        {
+            // correct it back to 90 degrees
+            turn = Quaternion.Euler(0f, currentAngle - (currentAngle - turnAngle), 0f);
+            rb.MoveRotation(turn);
+        }
     }
 
     private void TurnRandomly()
