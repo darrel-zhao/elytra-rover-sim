@@ -1,4 +1,7 @@
+using System;
+using System.Collections;
 using JetBrains.Annotations;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.UIElements;
@@ -17,6 +20,7 @@ public class ExecuteDrive : MonoBehaviour
     float originalYRotation;
 
     private Rigidbody rb;
+    private bool _isTurning = false;
 
     void Awake()
     {
@@ -35,9 +39,15 @@ public class ExecuteDrive : MonoBehaviour
         float currentYRotation = transform.rotation.eulerAngles.y;
 
         // Check for intersection and turn randomly
-        if (IsAtIntersection())
+        // if (IsAtIntersection())
+        // {
+        //     TurnRight();
+        // }
+
+        // Use a coroutine to turn right
+        if (IsAtIntersection() && !_isTurning)
         {
-            TurnRight();
+            StartCoroutine(TurnRight());
         }
     }
 
@@ -55,27 +65,39 @@ public class ExecuteDrive : MonoBehaviour
         return false; // Not at an intersection
     }
 
-    private void TurnRight(float turnAngle = 90f)
+    IEnumerator TurnRight(float turnAngle = 90f)
     {
-        float currentYRotation = transform.rotation.eulerAngles.y;
-        Quaternion turn = Quaternion.Euler(0f, turnSpeed * 2f * Time.deltaTime, 0f);
-        float currentAngle = (rb.rotation * turn).eulerAngles.y;
+        _isTurning = true;
 
-        if (currentAngle < turnAngle)
+        float rotatedSoFar = 0f;
+        float speed = turnSpeed * 3.8f * Time.deltaTime;
+
+        while (rotatedSoFar < turnAngle)
         {
-            rb.MoveRotation(rb.rotation * turn);
+            // rotate by a small amount & update rotatedSoFar
+            float delta = Mathf.Min(speed, turnAngle - rotatedSoFar);
+            rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, delta, 0f));
+            rotatedSoFar += delta;
+
+            print(rb.rotation.eulerAngles.y);
+
+            // move forward a bit
+            Vector3 forward = transform.forward * moveSpeed * Time.deltaTime * 0.5f; // move forward a bit less while turning
+            rb.MovePosition(rb.position + forward);
+
+            // tick frame
+            yield return null;
         }
-        else if (currentAngle > turnAngle)
-        {
-            // correct it back to 90 degrees
-            turn = Quaternion.Euler(0f, currentAngle - (currentAngle - turnAngle), 0f);
-            rb.MoveRotation(turn);
-        }
+
+        // wait until off intersection before setting _isTurning to false
+        yield return new WaitUntil(() => !IsAtIntersection());
+
+        _isTurning = false;
     }
 
     private void TurnRandomly()
     {
-        float randomTurn = Random.Range(-1f, 1f); // Random value between -1 and 1
+        float randomTurn = UnityEngine.Random.Range(-1f, 1f); // Random value between -1 and 1
         Quaternion turn = Quaternion.Euler(0f, randomTurn * turnSpeed * Time.deltaTime, 0f);
         rb.MoveRotation(rb.rotation * turn);
     }
