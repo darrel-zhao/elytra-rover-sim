@@ -70,7 +70,7 @@ public class ExecuteDrive : MonoBehaviour
         _isTurning = true;
 
         float rotatedSoFar = 0f;
-        float speed = turnSpeed * 3.8f * Time.deltaTime;
+        float speed = turnSpeed * 3.7f * Time.deltaTime;
 
         while (rotatedSoFar < turnAngle)
         {
