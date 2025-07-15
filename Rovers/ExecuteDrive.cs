@@ -3,6 +3,7 @@ using System.Collections;
 using JetBrains.Annotations;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.UIElements;
 
@@ -22,32 +23,34 @@ public class ExecuteDrive : MonoBehaviour
     private Rigidbody rb;
     private bool _isTurning = false;
 
+    // for debugging purposes
+    [Header("Manual Drive Mode")]
+    public bool keyboardOverride = false;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         originalYRotation = transform.rotation.eulerAngles.y;
     }
 
-    void Update()
+    void FixedUpdate()
     {
-        // First do a simple test drive: drive in an o shape
-        Vector3 forward = transform.forward * moveSpeed * Time.deltaTime;
-        rb.MovePosition(rb.position + forward);
-
-        // Calculate the current angle of rotation
-        float currentYRotation = transform.rotation.eulerAngles.y;
-
-        // Check for intersection and turn randomly
-        // if (IsAtIntersection())
-        // {
-        //     TurnRight();
-        // }
-
-        // Use a coroutine to turn right
-        if (IsAtIntersection() && !_isTurning)
+        // WASD controls for debugging
+        if (keyboardOverride)
+            handleKeyboardInput();
+        else
         {
-            StartCoroutine(TurnRight());
+            // First do a simple test drive: drive in an o shape
+            Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
+            rb.MovePosition(rb.position + forward);
+
+            // Use a coroutine to turn right
+            if (IsAtIntersection() && !_isTurning)
+            {
+                StartCoroutine(TurnRight());
+            }
         }
     }
 
@@ -70,7 +73,7 @@ public class ExecuteDrive : MonoBehaviour
         _isTurning = true;
 
         float rotatedSoFar = 0f;
-        float speed = turnSpeed * 3.7f * Time.deltaTime;
+        float speed = turnSpeed * 3.7f * Time.fixedDeltaTime;
 
         while (rotatedSoFar < turnAngle)
         {
@@ -82,11 +85,11 @@ public class ExecuteDrive : MonoBehaviour
             print(rb.rotation.eulerAngles.y);
 
             // move forward a bit
-            Vector3 forward = transform.forward * moveSpeed * Time.deltaTime * 0.5f; // move forward a bit less while turning
+            Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime * 0.5f; // move forward a bit less while turning
             rb.MovePosition(rb.position + forward);
 
             // tick frame
-            yield return null;
+            yield return new WaitForFixedUpdate();
         }
 
         // wait until off intersection before setting _isTurning to false
@@ -95,10 +98,15 @@ public class ExecuteDrive : MonoBehaviour
         _isTurning = false;
     }
 
-    private void TurnRandomly()
+    void handleKeyboardInput()
     {
-        float randomTurn = UnityEngine.Random.Range(-1f, 1f); // Random value between -1 and 1
-        Quaternion turn = Quaternion.Euler(0f, randomTurn * turnSpeed * Time.deltaTime, 0f);
-        rb.MoveRotation(rb.rotation * turn);
+        if (Keyboard.current.wKey.isPressed)
+            rb.MovePosition(rb.position + transform.forward * moveSpeed * Time.fixedDeltaTime);
+        if (Keyboard.current.sKey.isPressed)
+            rb.MovePosition(rb.position - transform.forward * moveSpeed * Time.fixedDeltaTime);
+        if (Keyboard.current.aKey.isPressed)
+            rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, -turnSpeed * Time.fixedDeltaTime, 0f));
+        if (Keyboard.current.dKey.isPressed)
+            rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, turnSpeed * Time.fixedDeltaTime, 0f));
     }
 }
