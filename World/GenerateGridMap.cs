@@ -1,5 +1,8 @@
 using UnityEngine;
 using Sim.World;
+using System.Collections.Generic;
+using Unity.VisualScripting;
+using System;
 using QuickGraph;
 
 [ExecuteAlways]
@@ -18,6 +21,14 @@ public class GridMapGenerator : MonoBehaviour
     public int numNodes;
     public World world;
     public UndirectedGraph<int, TaggedEdge<int, double>> graph;
+
+    readonly Vector2Int[] directions = new Vector2Int[]
+    {
+        new Vector2Int(0, 1),   // North
+        new Vector2Int(1, 0),   // East
+        new Vector2Int(0, -1),  // South
+        new Vector2Int(-1, 0),  // West
+    };
 
     float scale = 30f; // scale for the grid
     void Start()
@@ -48,8 +59,9 @@ public class GridMapGenerator : MonoBehaviour
         foreach (int node in graph.Vertices)
         {
             Vector3 intersection = NodeToWorld(node);
-            Instantiate(intersectionPrefab, intersection, Quaternion.identity, transform)
-                .name = $"Intersection {node}";
+            var interGO = Instantiate(intersectionPrefab, intersection, Quaternion.identity, transform);
+            interGO.name = $"Intersection {node}";
+            HandleIntersectionBorders(node, interGO.transform, graph);
         }
 
         // 3) create roads
@@ -67,17 +79,17 @@ public class GridMapGenerator : MonoBehaviour
     /// <returns>a 3D position (Vector3)</returns>
     public Vector3 NodeToWorld(int node)
     {
-        float i = (node / width) * scale; // calculate row position
-        float j = (node % width) * scale; // calculate column position
+        float i = node / width * scale; // calculate row position
+        float j = node % width * scale; // calculate column position
         return new Vector3(j, 0f, i);
     }
 
-/// <summary>
-/// Spawns a road between two nodes in the grid. Handles the rotation and scaling of the road prefab.
-/// </summary>
-/// <param name="src"></param>
-/// <param name="dst"></param>
-/// <param name="scale"></param>
+    /// <summary>
+    /// Spawns a road between two nodes in the grid. Handles the rotation and scaling of the road prefab.
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="dst"></param>
+    /// <param name="scale"></param>
     void SpawnRoad(int src, int dst)
     {
         Vector3 a = NodeToWorld(src);
@@ -106,12 +118,60 @@ public class GridMapGenerator : MonoBehaviour
         // Edit it, then set it back onto the renderer
         block.SetVector("_BaseColorMap_ST", new Vector4(length / 4, 1f, 0f, 0f));
         renderer.SetPropertyBlock(block);
+
     }
 
-/// <summary>
-/// Clears the current map by destroying all child objects of this GameObject.
-/// This is useful for regenerating the map without creating duplicates.
-/// </summary>
+    void HandleIntersectionBorders(int node, Transform intersectionTransform, UndirectedGraph<int, TaggedEdge<int, double>> graph)
+    {
+        int row = node % width;
+        int col = node / width;
+
+        HashSet<int> neighbors = new HashSet<int>();
+        foreach (var edge in graph.AdjacentEdges(node))
+        {
+            // only get the targets (even for self-loops)
+            int other = edge.Source == node
+                ? edge.Target 
+                : edge.Source;
+
+            neighbors.Add(other);
+        }
+
+        var childColliders = intersectionTransform.GetComponentsInChildren<BoxCollider>();
+
+        foreach (var child in childColliders)
+        {
+            switch (child.name)
+            {
+                case "Border_N":
+                    child.enabled = !HasNeighbor(row, col, 0, neighbors); break;
+                case "Border_E":
+                    child.enabled = !HasNeighbor(row, col, 1, neighbors); break;
+                case "Border_S":
+                    child.enabled = !HasNeighbor(row, col, 2, neighbors); break;
+                case "Border_W":
+                    child.enabled = !HasNeighbor(row, col, 3, neighbors); break;
+            }
+        }
+    }
+
+    bool HasNeighbor(int x, int y, int dirIndex, HashSet<int> neighbors)
+    {
+        Vector2Int dir = directions[dirIndex];
+        int nx = x + dir.x;
+        int ny = y + dir.y;
+
+        if (nx < 0 || nx >= width || ny < 0 || ny >= height)
+            return false; // outside grid bounds
+
+        int neighborNode = ny * width + nx;
+        return neighbors.Contains(neighborNode);
+    }
+
+    /// <summary>
+    /// Clears the current map by destroying all child objects of this GameObject.
+    /// This is useful for regenerating the map without creating duplicates.
+    /// </summary>
     void ClearMap()
     {
         // iterate backwards to avoid indexing issues when removing children
