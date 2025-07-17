@@ -31,7 +31,7 @@ public class GridMapGenerator : MonoBehaviour
     };
 
     float scale = 30f; // scale for the grid
-    void Start()
+    void Awake()
     {
         // clear old map
         ClearMap();
