@@ -1,12 +1,14 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using QuickGraph;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class TrashSpawner : MonoBehaviour
 {
     [Header("Trash Spawner Settings")]
-    public GameObject trashPrefab; // Prefab for the trash object
+    //public GameObject trashPrefab; // Prefab for the trash object
     public int numberOfTrashItems = 10; // Number of trash items to spawn
     public float roadWidth = 5f; // Width of the road area where trash can spawn
 
@@ -27,6 +29,20 @@ public class TrashSpawner : MonoBehaviour
 
     public void SpawnTrash()
     {
+        // Load all trash prefabs labeled "Trash" using Addressables
+        List<GameObject> trashList = new List<GameObject>();
+        AsyncOperationHandle<IList<GameObject>> handle = Addressables.LoadAssetsAsync<GameObject>("Trash", null);
+
+        handle.WaitForCompletion();
+        if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result.Count == 0)
+        {
+            Debug.LogError("No trash prefabs found with the 'Trash' label. Please add some prefabs to Addressables.");
+            return;
+        }
+        trashList.AddRange(handle.Result);
+        GameObject[] trashArray = trashList.ToArray();
+
+        // Get the map generator instance
         var map = FindFirstObjectByType<GridMapGenerator>();
 
         // Error checking
@@ -68,6 +84,8 @@ public class TrashSpawner : MonoBehaviour
             spawnPosition += offset;
 
             // Instantiate the trash prefab at the calculated position
+            int pickTrashIndex = Random.Range(0, trashArray.Length);
+            GameObject trashPrefab = trashArray[pickTrashIndex];
             var trashGO = Instantiate(trashPrefab, spawnPosition, Quaternion.identity, transform);
 
             // randomly rotate the trash item
