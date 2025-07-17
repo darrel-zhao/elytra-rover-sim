@@ -18,7 +18,6 @@ public class ExecuteDrive : MonoBehaviour
 {
     float moveSpeed = 1f; // Speed of the rover
     float turnSpeed = 50f; // Speed of rotation
-    float originalYRotation;
 
     private Rigidbody rb;
     private bool _isTurning = false;
@@ -32,7 +31,6 @@ public class ExecuteDrive : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        originalYRotation = transform.rotation.eulerAngles.y;
     }
 
     void FixedUpdate()
@@ -73,7 +71,7 @@ public class ExecuteDrive : MonoBehaviour
         _isTurning = true;
 
         float rotatedSoFar = 0f;
-        float speed = turnSpeed * 3.7f * Time.fixedDeltaTime;
+        float speed = turnSpeed * 3f * Time.fixedDeltaTime;
 
         while (rotatedSoFar < turnAngle)
         {
