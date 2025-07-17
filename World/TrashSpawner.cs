@@ -16,10 +16,10 @@ public class TrashSpawner : MonoBehaviour
     }
 
     // Update is called once per frame
-    // void Update()
-    // {
+    void Update()
+    {
 
-    // }
+    }
 
     /// <summary>
     /// Spawns trash items throughout the map
@@ -58,10 +58,20 @@ public class TrashSpawner : MonoBehaviour
             Vector3 fromPos = map.NodeToWorld(fromNode);
             Vector3 toPos = map.NodeToWorld(toNode);
 
+            // Find orthogonal heading to the road
+            Vector3 roadDirection = (toPos - fromPos).normalized;
+            Vector3 orthogonalDirection = new Vector3(-roadDirection.z, 0, roadDirection.x);
+
             Vector3 spawnPosition = Vector3.Lerp(fromPos, toPos, Random.Range(0f, 1f));
+
+            Vector3 offset = orthogonalDirection * Random.Range(-roadWidth / 2f, roadWidth / 2f);
+            spawnPosition += offset;
 
             // Instantiate the trash prefab at the calculated position
             var trashGO = Instantiate(trashPrefab, spawnPosition, Quaternion.identity, transform);
+
+            // randomly rotate the trash item
+            trashGO.transform.rotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
             trashGO.name = $"TrashItem_{i}";
         }
     }
