@@ -89,7 +89,7 @@ public class TrashSpawner : MonoBehaviour
             var trashGO = Instantiate(trashPrefab, spawnPosition, Quaternion.identity, transform);
 
             // randomly rotate the trash item
-            trashGO.transform.rotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
+            trashGO.transform.rotation = Quaternion.Euler(Random.Range(0f, 360f), Random.Range(0f, 360f), Random.Range(0f, 360f));
             trashGO.name = $"TrashItem_{i}";
         }
     }
