@@ -63,10 +63,10 @@ public class TrashSpawner : MonoBehaviour
                 adjacentEdges.Add(edge);
 
             if (adjacentEdges.Count == 0)
-                {
-                    Debug.LogWarning($"No adjacent edges found for node {fromNode}.");
-                    continue;
-                }
+            {
+                Debug.LogWarning($"No adjacent edges found for node {fromNode}.");
+                continue;
+            }
             int randomEdgeIndex = Random.Range(0, adjacentEdges.Count);
             int toNode = adjacentEdges[randomEdgeIndex].Target;
 
@@ -78,8 +78,8 @@ public class TrashSpawner : MonoBehaviour
             Vector3 roadDirection = (toPos - fromPos).normalized;
             Vector3 orthogonalDirection = new Vector3(-roadDirection.z, 0, roadDirection.x);
 
+            // Calculate a random position along the road, offset by the orthogonal direction
             Vector3 spawnPosition = Vector3.Lerp(fromPos, toPos, Random.Range(0f, 1f));
-
             Vector3 offset = orthogonalDirection * Random.Range(-roadWidth / 2f, roadWidth / 2f);
             spawnPosition += offset;
 
