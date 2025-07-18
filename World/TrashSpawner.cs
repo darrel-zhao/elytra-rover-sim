@@ -64,17 +64,18 @@ public class TrashSpawner : MonoBehaviour
             var adjacentEdges = new List<TaggedEdge<int, double>>();
 
             foreach (var edge in map.graph.AdjacentEdges(fromNode))
-                adjacentEdges.Add(edge);
+            {
+                if (edge.Target != fromNode)
+                    adjacentEdges.Add(edge);
+            }
 
             if (adjacentEdges.Count == 0)
-            {
-                Debug.LogWarning($"No adjacent edges found for node {fromNode}.");
-                continue;
-            }
+                {
+                    Debug.LogWarning($"No adjacent edges found for node {fromNode}.");
+                    continue;
+                }
             int randomEdgeIndex = Random.Range(0, adjacentEdges.Count);
             int toNode = adjacentEdges[randomEdgeIndex].Target;
-
-
 
             // Randomly select a position on the road using lerp()
             Vector3 fromPos = map.NodeToWorld(fromNode);
