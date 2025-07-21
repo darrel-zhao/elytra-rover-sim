@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using QuickGraph;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -21,11 +22,6 @@ public class TrashSpawner : MonoBehaviour
     // Event handling
     public event Action OnTrashSpawned;
 
-    // void Start()
-    // {
-    //     SpawnTrash();
-    // }
-
 
     /// <summary>
     /// Spawns trash items throughout the map
@@ -34,17 +30,13 @@ public class TrashSpawner : MonoBehaviour
     public void SpawnTrash()
     {
         // Load all trash prefabs labeled "Trash" using Addressables
-        List<GameObject> trashList = new List<GameObject>();
-        AsyncOperationHandle<IList<GameObject>> handle = Addressables.LoadAssetsAsync<GameObject>("Trash", null);
-
-        handle.WaitForCompletion();
-        if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result.Count == 0)
+        GameObject[] trashArray = getAllTrashPrefabs();
+        
+        if (trashArray == null || trashArray.Length == 0)
         {
-            Debug.LogError("No trash prefabs found with the 'Trash' label. Please add some prefabs to Addressables.");
+            Debug.LogError("No trash prefabs found. Please add some prefabs to Addressables with the label 'Trash'.");
             return;
         }
-        trashList.AddRange(handle.Result);
-        GameObject[] trashArray = trashList.ToArray();
 
         // Get the map generator instance
         var map = FindFirstObjectByType<GridMapGenerator>();
@@ -114,7 +106,22 @@ public class TrashSpawner : MonoBehaviour
         OnTrashSpawned?.Invoke();
     }
 
-    public void debugSpawnTrash(Vector3 fromPos, Vector3 toPos, Vector3 orthogonalDirection)
+    GameObject[] getAllTrashPrefabs()
+    {
+        List<GameObject> trashList = new List<GameObject>();
+        AsyncOperationHandle<IList<GameObject>> handle = Addressables.LoadAssetsAsync<GameObject>("Trash", null);
+
+        handle.WaitForCompletion();
+        if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result.Count == 0)
+        {
+            Debug.LogError("No trash prefabs found with the 'Trash' label. Please add some prefabs to Addressables.");
+            return null;
+        }
+
+        trashList.AddRange(handle.Result);
+        return trashList.ToArray();
+    }
+    void debugSpawnTrash(Vector3 fromPos, Vector3 toPos, Vector3 orthogonalDirection)
     {
         // highlight the orthogonal direction for debugging
         Debug.DrawLine(fromPos + orthogonalDirection * axisOffsets[1], toPos + orthogonalDirection * axisOffsets[1], Color.red, 20f);

@@ -26,31 +26,31 @@ public class ExecuteDrive : MonoBehaviour
     [Header("Manual Drive Mode")]
     public bool keyboardOverride = false;
 
-    // void Awake()
-    // {
-    //     rb = GetComponent<Rigidbody>();
-    //     rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-    //     rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-    // }
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+    }
 
-    // void FixedUpdate()
-    // {
-    //     // WASD controls for debugging
-    //     if (keyboardOverride)
-    //         handleKeyboardInput();
-    //     else
-    //     {
-    //         // First do a simple test drive: drive in an o shape
-    //         Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
-    //         rb.MovePosition(rb.position + forward);
+    void FixedUpdate()
+    {
+        // WASD controls for debugging
+        if (keyboardOverride)
+            handleKeyboardInput();
+        else
+        {
+            // First do a simple test drive: drive in an o shape
+            Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
+            rb.MovePosition(rb.position + forward);
 
-    //         // Use a coroutine to turn right
-    //         if (IsAtIntersection() && !_isTurning)
-    //         {
-    //             StartCoroutine(TurnRight());
-    //         }
-    //     }
-    // }
+            // Use a coroutine to turn right
+            if (IsAtIntersection() && !_isTurning)
+            {
+                StartCoroutine(TurnRight());
+            }
+        }
+    }
 
     private bool IsAtIntersection()
     {

@@ -19,31 +19,31 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        gridMapGenerator.OnMapInitialized += OnMapInitialized;
+        gridMapGenerator.OnMapInitialized += HandleMapInitialized;
         gridMapGenerator.InitializeMap();
     }
 
-    void OnMapInitialized()
+    void HandleMapInitialized()
     {
-        gridMapGenerator.OnMapInitialized -= OnMapInitialized; // Unsubscribe to prevent multiple calls
+        gridMapGenerator.OnMapInitialized -= HandleMapInitialized; // Unsubscribe to prevent multiple calls
         Debug.Log("Map initialized successfully.");
 
-        roverSpawner.OnRoversInitialized += OnRoversInitialized;
+        roverSpawner.OnRoversInitialized += HandleRoversInitialized;
         roverSpawner.InitializeRovers();
     }
 
-    void OnRoversInitialized()
+    void HandleRoversInitialized()
     {
-        roverSpawner.OnRoversInitialized -= OnRoversInitialized; // Unsubscribe to prevent multiple calls
+        roverSpawner.OnRoversInitialized -= HandleRoversInitialized; // Unsubscribe to prevent multiple calls
         Debug.Log("Rovers initialized successfully.");
 
-        trashSpawner.OnTrashSpawned += OnTrashSpawned;
+        trashSpawner.OnTrashSpawned += HandleTrashSpawned;
         trashSpawner.SpawnTrash();
     }
 
-    void OnTrashSpawned()
+    void HandleTrashSpawned()
     {
-        trashSpawner.OnTrashSpawned -= OnTrashSpawned; // Unsubscribe to prevent multiple calls
+        trashSpawner.OnTrashSpawned -= HandleTrashSpawned; // Unsubscribe to prevent multiple calls
         Debug.Log("Trash spawned successfully.");
     }
 }
