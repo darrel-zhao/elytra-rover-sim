@@ -1,5 +1,6 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
-
 
 public class RoverSpawner : MonoBehaviour
 {
@@ -14,10 +15,13 @@ public class RoverSpawner : MonoBehaviour
     float spawnZOffset = 2.3f; // remove later
 
     // Housekeeping variables 
-    int roverCount = 0;
-    int totalNodes;
+    public int roverCount = 0;
+    // List<Camera> roverCameras;
 
-    void Start()
+    // Event handling
+    public event Action OnRoversInitialized;
+
+    public void InitializeRovers()
     {
         var mapGen = FindFirstObjectByType<GridMapGenerator>();
 
@@ -27,13 +31,13 @@ public class RoverSpawner : MonoBehaviour
             return;
         }
 
-        totalNodes = mapGen.width * mapGen.height;
-
         // Randomly generate 3 rovers at randomly selected start nodes
         for (int i = 0; i < numRovers; i++)
         {
             SpawnRover(i);
         }
+
+        OnRoversInitialized?.Invoke();
     }
 
     void SpawnRover(int node)
@@ -43,8 +47,8 @@ public class RoverSpawner : MonoBehaviour
         pos.z += spawnZOffset; // remove later
 
         roverCount++;
-        Instantiate(roverPrefab, pos, Quaternion.identity, transform)
-            .name = $"Rover {roverCount}";
+        var rover = Instantiate(roverPrefab, pos, Quaternion.identity, transform);
+        rover.name = $"Rover {roverCount}";
     }
 
 }

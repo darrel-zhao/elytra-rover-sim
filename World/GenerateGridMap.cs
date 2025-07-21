@@ -22,6 +22,9 @@ public class GridMapGenerator : MonoBehaviour
     public World world;
     public UndirectedGraph<int, TaggedEdge<int, double>> graph;
 
+    // Event handling
+    public event Action OnMapInitialized;
+
     readonly Vector2Int[] directions = new Vector2Int[]
     {
         new Vector2Int(0, 1),   // North
@@ -31,22 +34,25 @@ public class GridMapGenerator : MonoBehaviour
     };
 
     float scale = 30f; // scale for the grid
-    void Awake()
+
+    // #if UNITY_EDITOR
+    //     void OnValidate()
+    //     {
+    //         if (!Application.isPlaying)
+    //         {
+    //             BuildMap();
+    //         }
+    //     }
+    // #endif
+
+
+    public void InitializeMap()
     {
-        // clear old map
         ClearMap();
         BuildMap();
-    }
 
-    #if UNITY_EDITOR
-        void OnValidate()
-        {
-            if (!Application.isPlaying)
-            {
-                BuildMap();
-            }
-        }
-    #endif
+        OnMapInitialized?.Invoke();
+    }
 
     void BuildMap()
     {

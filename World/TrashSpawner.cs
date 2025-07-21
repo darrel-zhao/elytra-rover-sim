@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using QuickGraph;
 using UnityEditor;
@@ -16,16 +17,15 @@ public class TrashSpawner : MonoBehaviour
 
     float roadWidth = 0.4f; // Width of the road area where trash can spawn
     float[] axisOffsets = new float[] { -1.6f, 1.6f }; // Possible offsets for trash spawning
-    void Start()
-    {
-        SpawnTrash();
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
+    // Event handling
+    public event Action OnTrashSpawned;
 
-    }
+    // void Start()
+    // {
+    //     SpawnTrash();
+    // }
+
 
     /// <summary>
     /// Spawns trash items throughout the map
@@ -60,7 +60,7 @@ public class TrashSpawner : MonoBehaviour
         for (int i = 0; i < numberOfTrashItems; i++)
         {
             // randomly select an edge (road) to spawn trash, then randomly select an adjacent node from that beginning node
-            int fromNode = Random.Range(0, map.numNodes);
+            int fromNode = UnityEngine.Random.Range(0, map.numNodes);
             var adjacentEdges = new List<TaggedEdge<int, double>>();
 
             foreach (var edge in map.graph.AdjacentEdges(fromNode))
@@ -70,11 +70,11 @@ public class TrashSpawner : MonoBehaviour
             }
 
             if (adjacentEdges.Count == 0)
-                {
-                    Debug.LogWarning($"No adjacent edges found for node {fromNode}.");
-                    continue;
-                }
-            int randomEdgeIndex = Random.Range(0, adjacentEdges.Count);
+            {
+                Debug.LogWarning($"No adjacent edges found for node {fromNode}.");
+                continue;
+            }
+            int randomEdgeIndex = UnityEngine.Random.Range(0, adjacentEdges.Count);
             int toNode = adjacentEdges[randomEdgeIndex].Target;
 
             // Randomly select a position on the road using lerp()
@@ -93,23 +93,25 @@ public class TrashSpawner : MonoBehaviour
 
             // Calculate a random position along the road, offset by the orthogonal direction
             // Concentrate trash on sides of the roads; first randomly pick left or right side, then apply offset
-            float axisOffset = axisOffsets[Random.Range(0, axisOffsets.Length)];
-            Vector3 spawnPosition = Vector3.Lerp(fromPos, toPos, Random.Range(0f, 1f));
+            float axisOffset = axisOffsets[UnityEngine.Random.Range(0, axisOffsets.Length)];
+            Vector3 spawnPosition = Vector3.Lerp(fromPos, toPos, UnityEngine.Random.Range(0f, 1f));
             spawnPosition += orthogonalDirection * axisOffset;
 
             // Randomly offset the spawn position on either side of the road
-            Vector3 randomOffset = orthogonalDirection * Random.Range(-roadWidth / 2f, roadWidth / 2f);
+            Vector3 randomOffset = orthogonalDirection * UnityEngine.Random.Range(-roadWidth / 2f, roadWidth / 2f);
             spawnPosition += randomOffset;
 
             // Instantiate one of the trash prefabs at the calculated position
-            int pickTrashIndex = Random.Range(0, trashArray.Length);
+            int pickTrashIndex = UnityEngine.Random.Range(0, trashArray.Length);
             GameObject trashPrefab = trashArray[pickTrashIndex];
             var trashGO = Instantiate(trashPrefab, spawnPosition, Quaternion.identity, transform);
 
             // randomly rotate the trash item
-            trashGO.transform.rotation = Quaternion.Euler(Random.Range(0f, 360f), Random.Range(0f, 360f), Random.Range(0f, 360f));
+            trashGO.transform.rotation = Quaternion.Euler(UnityEngine.Random.Range(0f, 360f), UnityEngine.Random.Range(0f, 360f), UnityEngine.Random.Range(0f, 360f));
             trashGO.name = $"TrashItem_{i}";
         }
+
+        OnTrashSpawned?.Invoke();
     }
 
     public void debugSpawnTrash(Vector3 fromPos, Vector3 toPos, Vector3 orthogonalDirection)
