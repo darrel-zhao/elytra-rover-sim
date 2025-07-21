@@ -80,7 +80,7 @@ public class ExecuteDrive : MonoBehaviour
             rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, delta, 0f));
             rotatedSoFar += delta;
 
-            print(rb.rotation.eulerAngles.y);
+            // print(rb.rotation.eulerAngles.y);
 
             // move forward a bit
             Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime * 0.5f; // move forward a bit less while turning

@@ -8,7 +8,7 @@ public class RoverSpawner : MonoBehaviour
     public GameObject roverPrefab;
 
     [Header("Number of Rovers")]
-    public int numRovers = 1;
+    public int numRovers;
 
     // Rover should spawn on the side of the road, not middle
     float spawnXOffset = 1.5f;
@@ -16,7 +16,7 @@ public class RoverSpawner : MonoBehaviour
 
     // Housekeeping variables 
     public int roverCount = 0;
-    // List<Camera> roverCameras;
+    List<Camera> roverCameras;
 
     // Event handling
     public event Action OnRoversInitialized;
@@ -24,6 +24,7 @@ public class RoverSpawner : MonoBehaviour
     public void InitializeRovers()
     {
         var mapGen = FindFirstObjectByType<GridMapGenerator>();
+        roverCameras = new List<Camera>();
 
         if (mapGen == null)
         {
@@ -49,6 +50,8 @@ public class RoverSpawner : MonoBehaviour
         roverCount++;
         var rover = Instantiate(roverPrefab, pos, Quaternion.identity, transform);
         rover.name = $"Rover {roverCount}";
+
+        roverCameras.Add(rover.GetComponentInChildren<Camera>());
     }
 
 }

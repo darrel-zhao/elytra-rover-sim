@@ -1,10 +1,13 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-public class GameManager : MonoBehaviour
+public class SimManager : MonoBehaviour
 {
     [SerializeField] GridMapGenerator gridMapGenerator;
     [SerializeField] RoverSpawner roverSpawner;
     [SerializeField] TrashSpawner trashSpawner;
+    [SerializeField] CameraManager cameraManager;
+
     void Awake()
     {
         if (gridMapGenerator == null)
@@ -45,5 +48,24 @@ public class GameManager : MonoBehaviour
     {
         trashSpawner.OnTrashSpawned -= HandleTrashSpawned; // Unsubscribe to prevent multiple calls
         Debug.Log("Trash spawned successfully.");
+
+        cameraManager.OnCamerasUpdated += HandleCamerasUpdated;
+        cameraManager.getCameras();
+    }
+
+    void HandleCamerasUpdated()
+    {
+        cameraManager.OnCamerasUpdated -= HandleCamerasUpdated; // Unsubscribe to prevent multiple calls
+        Debug.Log("Cameras updated successfully.");
+    }
+
+    void Update()
+    {
+        // Camera Switching: if "c" is pressed, switch to the next camera
+        if (Keyboard.current.cKey.wasPressedThisFrame)
+        {
+            cameraManager.SwitchNextCamera();
+            Debug.Log("Switched to the next camera.");
+        }
     }
 }
