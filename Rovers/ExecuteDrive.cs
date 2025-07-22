@@ -66,6 +66,51 @@ public class ExecuteDrive : MonoBehaviour
         return false; // Not at an intersection
     }
 
+    IEnumerator TurnLeft()
+    {
+        _isTurning = true;
+
+        float crossDistance = 1.5f;
+        float crossDuration = crossDistance / moveSpeed;
+        float elapsed = 0f;
+
+        // 1. Cross to opposite end of intersection in straight line
+        while (elapsed < crossDuration)
+        {
+            Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
+            rb.MovePosition(rb.position + forward);
+            elapsed += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+
+        // 2. Rotate left (CCW) by 90 degrees
+        float rotatedSoFar = 0f;
+        float rotationSpeed = turnSpeed * 3f * Time.fixedDeltaTime;
+
+        while (rotatedSoFar < 90f)
+        {
+            float delta = Mathf.Min(rotationSpeed, 90f - rotatedSoFar);
+            rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, -delta, 0f));
+            rotatedSoFar += delta;
+
+            Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime * 0.5f;
+            rb.MovePosition(rb.position + forward);
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        // 3. Cross to opposite end until road is reached (not in intersection anymore)
+        elapsed = 0f;
+        while (elapsed < crossDuration)
+        {
+            Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
+            rb.MovePosition(rb.position + forward);
+            elapsed += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+    }
+
+
     IEnumerator TurnRight(float turnAngle = 90f)
     {
         _isTurning = true;
