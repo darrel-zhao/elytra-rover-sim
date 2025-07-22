@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Analytics;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class TrashSpawner : MonoBehaviour
@@ -59,22 +60,15 @@ public class TrashSpawner : MonoBehaviour
             Vector3 fromPos, toPos, orthogonalDirection;
             convertToWorldPositions(out fromPos, out toPos, out orthogonalDirection, fromNode, toNode, ref map);
 
-            // check debugMode
+            // check debugMode: if active, draws lines to visualize the spawn positions
             if (debugMode)
                 debugSpawnTrash(fromPos, toPos, orthogonalDirection);
 
-            // Calculate a random position along the road, offset by the orthogonal direction
-            // Concentrate trash on sides of the roads; first randomly pick left or right side, then apply offset
+            // Calculate the random spawn position along the road + assign
             Vector3 spawnPosition = calcSpawnPosition(fromPos, toPos, orthogonalDirection);
 
-            // Instantiate one of the trash prefabs at the calculated position
-            int pickTrashIndex = UnityEngine.Random.Range(0, trashArray.Length);
-            GameObject trashPrefab = trashArray[pickTrashIndex];
-            var trashGO = Instantiate(trashPrefab, spawnPosition, Quaternion.identity, transform);
-
-            // randomly rotate the trash item
-            trashGO.transform.rotation = Quaternion.Euler(UnityEngine.Random.Range(0f, 360f), UnityEngine.Random.Range(0f, 360f), UnityEngine.Random.Range(0f, 360f));
-            trashGO.name = $"TrashItem_{i}";
+            // Finally, spawn the trash item
+            initiateSpawnedTrash(i, spawnPosition, ref trashArray);
         }
 
         OnTrashSpawned?.Invoke();
@@ -143,6 +137,17 @@ public class TrashSpawner : MonoBehaviour
         pos += randomOffset;
 
         return pos;
+    }
+
+    void initiateSpawnedTrash(int i, Vector3 spawnPosition, ref GameObject[] trashArray)
+    {
+        int pickTrashIndex = UnityEngine.Random.Range(0, trashArray.Length);
+        GameObject trashPrefab = trashArray[pickTrashIndex];
+        var trashGO = Instantiate(trashPrefab, spawnPosition, Quaternion.identity, transform);
+
+        // randomly rotate the trash item
+        trashGO.transform.rotation = Quaternion.Euler(UnityEngine.Random.Range(0f, 360f), UnityEngine.Random.Range(0f, 360f), UnityEngine.Random.Range(0f, 360f));
+        trashGO.name = $"TrashItem_{i}";
     }
 
     void debugSpawnTrash(Vector3 fromPos, Vector3 toPos, Vector3 orthogonalDirection)
