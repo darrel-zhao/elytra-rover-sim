@@ -27,8 +27,6 @@ public class CameraManager : MonoBehaviour
         // Get and add all rover cameras
         Camera[] roverCams = rs.GetComponentsInChildren<Camera>();
 
-        print("roverCams: " + roverCams.Length);
-
         for (int i = 1; i < allCameras.Length; i++)
         {
             allCameras[i] = roverCams[i - 1]; // Assign rover cameras to the subsequent indices

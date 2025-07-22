@@ -63,9 +63,6 @@ public class SimManager : MonoBehaviour
     {
         // Camera Switching: if "c" is pressed, switch to the next camera
         if (Keyboard.current.cKey.wasPressedThisFrame)
-        {
             cameraManager.SwitchNextCamera();
-            Debug.Log("Switched to the next camera.");
-        }
     }
 }
