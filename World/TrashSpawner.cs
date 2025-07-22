@@ -65,13 +65,7 @@ public class TrashSpawner : MonoBehaviour
 
             // Calculate a random position along the road, offset by the orthogonal direction
             // Concentrate trash on sides of the roads; first randomly pick left or right side, then apply offset
-            float axisOffset = axisOffsets[UnityEngine.Random.Range(0, axisOffsets.Length)];
-            Vector3 spawnPosition = Vector3.Lerp(fromPos, toPos, UnityEngine.Random.Range(0f, 1f));
-            spawnPosition += orthogonalDirection * axisOffset;
-
-            // Randomly offset the spawn position on either side of the road
-            Vector3 randomOffset = orthogonalDirection * UnityEngine.Random.Range(-roadWidth / 2f, roadWidth / 2f);
-            spawnPosition += randomOffset;
+            Vector3 spawnPosition = calcSpawnPosition(fromPos, toPos, orthogonalDirection);
 
             // Instantiate one of the trash prefabs at the calculated position
             int pickTrashIndex = UnityEngine.Random.Range(0, trashArray.Length);
@@ -136,6 +130,19 @@ public class TrashSpawner : MonoBehaviour
 
             // Find orthogonal heading to the road
             orthogonalDirection = new Vector3(-roadDirection.z, 0, roadDirection.x);
+    }
+
+    Vector3 calcSpawnPosition(Vector3 fromPos, Vector3 toPos, Vector3 orthogonalDirection)
+    {
+        float axisOffset = axisOffsets[UnityEngine.Random.Range(0, axisOffsets.Length)];
+        Vector3 pos = Vector3.Lerp(fromPos, toPos, UnityEngine.Random.Range(0f, 1f));
+        pos += orthogonalDirection * axisOffset;
+
+        // Randomly offset the spawn position on either side of the road
+        Vector3 randomOffset = orthogonalDirection * UnityEngine.Random.Range(-roadWidth / 2f, roadWidth / 2f);
+        pos += randomOffset;
+
+        return pos;
     }
 
     void debugSpawnTrash(Vector3 fromPos, Vector3 toPos, Vector3 orthogonalDirection)
