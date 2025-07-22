@@ -52,32 +52,12 @@ public class TrashSpawner : MonoBehaviour
         for (int i = 0; i < numberOfTrashItems; i++)
         {
             // randomly select an edge (road) to spawn trash, then randomly select an adjacent node from that beginning node
-            int fromNode = UnityEngine.Random.Range(0, map.numNodes);
-            var adjacentEdges = new List<TaggedEdge<int, double>>();
+            int fromNode, toNode;
+            selectRandomRoad(out fromNode, out toNode, ref map);
 
-            foreach (var edge in map.graph.AdjacentEdges(fromNode))
-            {
-                if (edge.Target != fromNode)
-                    adjacentEdges.Add(edge);
-            }
-
-            if (adjacentEdges.Count == 0)
-            {
-                Debug.LogWarning($"No adjacent edges found for node {fromNode}.");
-                continue;
-            }
-            int randomEdgeIndex = UnityEngine.Random.Range(0, adjacentEdges.Count);
-            int toNode = adjacentEdges[randomEdgeIndex].Target;
-
-            // Randomly select a position on the road using lerp()
-            Vector3 fromPos = map.NodeToWorld(fromNode);
-            Vector3 toPos = map.NodeToWorld(toNode);
-            Vector3 roadDirection = (toPos - fromPos).normalized;
-            fromPos += roadDirection * 2f; // offset from the start of the road
-            toPos -= roadDirection * 2f; // offset from the end of the road
-
-            // Find orthogonal heading to the road
-            Vector3 orthogonalDirection = new Vector3(-roadDirection.z, 0, roadDirection.x);
+            // Convert the selected nodes to world positions
+            Vector3 fromPos, toPos, orthogonalDirection;
+            convertToWorldPositions(out fromPos, out toPos, out orthogonalDirection, fromNode, toNode, ref map);
 
             // check debugMode
             if (debugMode)
@@ -121,6 +101,43 @@ public class TrashSpawner : MonoBehaviour
         trashList.AddRange(handle.Result);
         return trashList.ToArray();
     }
+
+    void selectRandomRoad(out int fromNode, out int toNode, ref GridMapGenerator map)
+    {
+        fromNode = UnityEngine.Random.Range(0, map.numNodes);
+        List<int> adjacentVertices = new List<int>();
+
+        // Find all edges adjacent to the selected node
+        foreach (var edge in map.graph.AdjacentEdges(fromNode))
+        {
+            // if the edge’s Source is our node, take the Target, otherwise take Source
+            int neighbor = edge.Source == fromNode
+                            ? edge.Target
+                            : edge.Source;
+            adjacentVertices.Add(neighbor);
+        }
+
+        if (adjacentVertices.Count == 0)
+        {
+            Debug.LogWarning($"No adjacent vertices found for node {fromNode}.");
+        }
+
+        int randomEdgeIndex = UnityEngine.Random.Range(0, adjacentVertices.Count);
+        toNode = adjacentVertices[randomEdgeIndex];
+    }
+
+    void convertToWorldPositions(out Vector3 fromPos, out Vector3 toPos, out Vector3 orthogonalDirection, int fromNode, int toNode, ref GridMapGenerator map)
+    {
+            fromPos = map.NodeToWorld(fromNode);
+            toPos = map.NodeToWorld(toNode);
+            Vector3 roadDirection = (toPos - fromPos).normalized;
+            fromPos += roadDirection * 2f; // offset from the start of the road
+            toPos -= roadDirection * 2f; // offset from the end of the road
+
+            // Find orthogonal heading to the road
+            orthogonalDirection = new Vector3(-roadDirection.z, 0, roadDirection.x);
+    }
+
     void debugSpawnTrash(Vector3 fromPos, Vector3 toPos, Vector3 orthogonalDirection)
     {
         // highlight the orthogonal direction for debugging
