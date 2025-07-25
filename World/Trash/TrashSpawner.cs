@@ -1,11 +1,7 @@
 using System;
 using System.Collections.Generic;
-using QuickGraph;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using UnityEngine.Analytics;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class TrashSpawner : MonoBehaviour
@@ -26,8 +22,7 @@ public class TrashSpawner : MonoBehaviour
 
     /// <summary>
     /// Spawns trash items throughout the map
-    /// /// </summary>
-
+    /// </summary>
     public void SpawnTrash()
     {
         // Load all trash prefabs labeled "Trash" using Addressables
