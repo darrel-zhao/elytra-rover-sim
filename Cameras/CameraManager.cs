@@ -1,13 +1,14 @@
 using System;
+using System.Security.Cryptography;
 using UnityEngine;
 
 public class CameraManager : MonoBehaviour
 {
     RoverSpawner rs;
+    Camera[] allCameras;
 
     int activeCameraIndex = 0; // Index of the currently active camera
-
-    Camera[] allCameras;
+    int numRoverPOVs = 2; // Number of rover cameras per rover
 
     // Event handling
     public event Action OnCamerasUpdated;
@@ -15,7 +16,7 @@ public class CameraManager : MonoBehaviour
     public Camera[] getCameras()
     {
         rs = FindFirstObjectByType<RoverSpawner>();
-        allCameras = new Camera[rs.roverCount + 1]; // +1 for the main camera
+        allCameras = new Camera[numRoverPOVs*rs.roverCount + 1]; // +1 for the main camera
         allCameras[0] = Camera.main; // Assign the main camera to the first index
 
         if (rs == null)
