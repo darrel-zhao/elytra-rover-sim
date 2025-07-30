@@ -1,12 +1,7 @@
-using System;
 using System.Collections;
-using JetBrains.Annotations;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.UIElements;
-
+ 
 /// <summary>
 /// This script handles the driving a single rover within the simulation. The rover will move forward 
 /// at a constant speed and will turn randomly when it reaches an intersection. This script is attached
