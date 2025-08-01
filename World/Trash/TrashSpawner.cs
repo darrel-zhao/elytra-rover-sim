@@ -19,7 +19,6 @@ public class TrashSpawner : MonoBehaviour
     // Event handling
     public event Action OnTrashSpawned;
 
-
     /// <summary>
     /// Spawns trash items throughout the map
     /// </summary>
