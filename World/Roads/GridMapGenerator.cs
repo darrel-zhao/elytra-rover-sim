@@ -34,17 +34,6 @@ public class GridMapGenerator : MonoBehaviour
 
     float scale = 30f; // scale for the grid
 
-    // #if UNITY_EDITOR
-    //     void OnValidate()
-    //     {
-    //         if (!Application.isPlaying)
-    //         {
-    //             BuildMap();
-    //         }
-    //     }
-    // #endif
-
-
     public void InitializeMap()
     {
         ClearMap();

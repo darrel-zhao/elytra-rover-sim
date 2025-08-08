@@ -8,7 +8,22 @@ public class SimManager : MonoBehaviour
     [SerializeField] TrashSpawner trashSpawner;
     [SerializeField] CameraManager cameraManager;
 
-    void Awake()
+    private SimSettings settings;
+
+    public void SetSettings(SimSettings simSettings)
+    {
+        settings = simSettings;
+
+        // Apply settings to respective components
+        gridMapGenerator.width = settings.gridMapCols;
+        gridMapGenerator.height = settings.gridMapRows;
+
+        roverSpawner.numRovers = settings.numberOfRovers;
+
+        Initialize();
+    }
+
+    void Initialize()
     {
         if (gridMapGenerator == null)
         {

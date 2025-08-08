@@ -40,10 +40,25 @@ public class SimInputsUI : MonoBehaviour
                 settings.gridMapCols = 1;
             }
         });
+
+        numberOfRovers.onEndEdit.AddListener(s =>
+        {
+            // tries to convert s into integer, sets to 0 if fails
+            int.TryParse(s, out settings.numberOfRovers);
+
+            // ensures that number of rovers is at least 1
+            if (settings.numberOfRovers < 1)
+            {
+                settings.numberOfRovers = 1;
+            }
+        });
+
+        startButton.onClick.AddListener(OnStartClicked);
     }
 
-    private void OnApply()
+    private void OnStartClicked()
     {
-        
+        settingsPanel.SetActive(false);
+        simManager.SetSettings(settings);
     }
 }
