@@ -1,7 +1,15 @@
+using System;
 using System.Collections;
+using QuickGraph;
+using Sim.World;
+using JetBrains.Annotations;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
- 
+using UnityEngine.InputSystem.Controls;
+using UnityEngine.UIElements;
+using System.Collections.Generic;
+
 /// <summary>
 /// This script handles the driving a single rover within the simulation. The rover will move forward 
 /// at a constant speed and will turn randomly when it reaches an intersection. This script is attached
@@ -20,6 +28,9 @@ public class ExecuteDrive : MonoBehaviour
     // for debugging purposes
     [Header("Manual Drive Mode")]
     public bool keyboardOverride = false;
+
+    private Queue<int> pathQueue = new Queue<int>();
+    public UndirectedGraph<int, TaggedEdge<int, double>> graph;
 
     void Start()
     {
@@ -134,6 +145,60 @@ public class ExecuteDrive : MonoBehaviour
         yield return new WaitUntil(() => !IsAtIntersection());
 
         _isTurning = false;
+    }
+
+    public void ComputePath(int startNode, int goalNode)
+    {
+        if (graph == null || !graph.ContainsVertex(startNode) || !graph.ContainsVertex(goalNode))
+        {
+            Debug.LogError("Graph not assigned or invalid nodes");
+            return;
+        }
+
+        Dictionary<int, int> cameFrom = new Dictionary<int, int>();
+        Queue<int> frontier = new Queue<int>();
+        frontier.Enqueue(startNode);
+        cameFrom[startNode] = -1;
+
+        while (frontier.Count > 0)
+        {
+            int current = frontier.Dequeue();
+
+            if (current == goalNode)
+                break;
+
+            foreach (var edge in graph.AdjacentEdges(current))
+            {
+                int neighbor = edge.GetOtherVertex(current);
+
+                if (!cameFrom.ContainsKey(neighbor))
+                {
+                    frontier.Enqueue(neighbor);
+                    cameFrom[neighbor] = current;
+                }
+            }
+        }
+
+        if (!cameFrom.ContainsKey(goalNode))
+        {
+            Debug.LogError("No path found");
+            return;
+        }
+
+        // Reconstruct path
+        Stack<int> reversePath = new Stack<int>();
+        int node = goalNode;
+        while (node != -1)
+        {
+            reversePath.Push(node);
+            node = cameFrom[node];
+        }
+
+        pathQueue.Clear();
+        while (reversePath.Count > 0)
+            pathQueue.Enqueue(reversePath.Pop());
+
+        Debug.Log($"Path computed: {string.Join(" -> ", pathQueue)}");   
     }
 
     void handleKeyboardInput()
