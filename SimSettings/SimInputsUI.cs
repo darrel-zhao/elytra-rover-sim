@@ -26,9 +26,9 @@ public class SimInputsUI : MonoBehaviour
         {
             int.TryParse(s, out settings.gridMapRows);
 
-            if (settings.gridMapRows < 1)
+            if (settings.gridMapRows < 2)
             {
-                settings.gridMapRows = 1;
+                settings.gridMapRows = 2;
             }
         });
 
@@ -36,9 +36,9 @@ public class SimInputsUI : MonoBehaviour
         {
             int.TryParse(s, out settings.gridMapCols);
 
-            if (settings.gridMapCols < 1)
+            if (settings.gridMapCols < 2)
             {
-                settings.gridMapCols = 1;
+                settings.gridMapCols = 2;
             }
         });
 
