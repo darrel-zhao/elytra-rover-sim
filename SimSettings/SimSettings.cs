@@ -6,4 +6,5 @@ public class SimSettings
     public int numberOfRovers;
     public int gridMapRows;
     public int gridMapCols;
+    public int numTrashItems;
 }

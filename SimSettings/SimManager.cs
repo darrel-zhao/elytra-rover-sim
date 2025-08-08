@@ -19,6 +19,7 @@ public class SimManager : MonoBehaviour
         gridMapGenerator.height = settings.gridMapRows;
 
         roverSpawner.numRovers = settings.numberOfRovers;
+        trashSpawner.numberOfTrashItems = settings.numTrashItems;
 
         Initialize();
     }

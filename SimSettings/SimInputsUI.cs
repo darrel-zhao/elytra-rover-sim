@@ -12,6 +12,7 @@ public class SimInputsUI : MonoBehaviour
     [SerializeField] private InputField gridRows;
     [SerializeField] private InputField gridCols;
     [SerializeField] private InputField numberOfRovers;
+    [SerializeField] private InputField numTrashItems;
 
     [Header("Scene References")]
     [SerializeField] private GameObject settingsPanel;
@@ -50,6 +51,18 @@ public class SimInputsUI : MonoBehaviour
             if (settings.numberOfRovers < 1)
             {
                 settings.numberOfRovers = 1;
+            }
+        });
+
+        numTrashItems.onEndEdit.AddListener(s =>
+        {
+            // tries to convert s into integer, sets to 0 if fails
+            int.TryParse(s, out settings.numTrashItems);
+
+            // ensures that number of trash items is at least 1
+            if (settings.numTrashItems < 1)
+            {
+                settings.numTrashItems = 1;
             }
         });
 
