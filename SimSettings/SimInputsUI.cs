@@ -30,6 +30,16 @@ public class SimInputsUI : MonoBehaviour
                 settings.gridMapRows = 1;
             }
         });
+
+        gridCols.onEndEdit.AddListener(s =>
+        {
+            int.TryParse(s, out settings.gridMapCols);
+
+            if (settings.gridMapCols < 1)
+            {
+                settings.gridMapCols = 1;
+            }
+        });
     }
 
     private void OnApply()
