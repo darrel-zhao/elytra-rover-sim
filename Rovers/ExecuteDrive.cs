@@ -53,7 +53,8 @@ public class ExecuteDrive : MonoBehaviour
             // Use a coroutine to turn right
             if (IsAtIntersection() && !_isTurning)
             {
-                StartCoroutine(TurnRight());
+                // StartCoroutine(TurnRight());
+                StartCoroutine(TurnLeft());
             }
         }
     }
@@ -114,6 +115,9 @@ public class ExecuteDrive : MonoBehaviour
             elapsed += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
         }
+
+        yield return new WaitUntil(() => !IsAtIntersection());
+        _isTurning = false;
     }
 
 
