@@ -9,10 +9,12 @@ public class SimInputsUI : MonoBehaviour
 
     [Header("UI Elements")]
     [SerializeField] private Button startButton;
+    [SerializeField] private Button createPathsButton;
     [SerializeField] private InputField gridRows;
     [SerializeField] private InputField gridCols;
     [SerializeField] private InputField numberOfRovers;
     [SerializeField] private InputField numTrashItems;
+
 
     [Header("Scene References")]
     [SerializeField] private GameObject settingsPanel;
