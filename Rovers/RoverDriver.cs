@@ -7,13 +7,13 @@ public class RoverDriver : MonoBehaviour
 {
     float moveSpeed = 1f; // Speed of the rover
     float turnSpeed = 50f; // Speed of rotation
-    float turnTolerance = 20f;
+    // float turnTolerance = 20f;
     bool _isTurning = false;
     Rigidbody rb;
     GridMapGenerator map;
     Rover rover;
     Vector3 currentTarget;
-    public bool active{ get; private set; }
+    public bool active { get; private set; }
 
     public void Init(GridMapGenerator mapRef, Rover roverData)
     {
@@ -27,6 +27,7 @@ public class RoverDriver : MonoBehaviour
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
         // Prep the first destination
+        rover.path.Dequeue(); // Remove the first node, as that is the start node
         AdvanceWaypoint();
         active = true;
     }
@@ -41,6 +42,7 @@ public class RoverDriver : MonoBehaviour
             bool nextExists = AdvanceWaypoint();
             if (!nextExists)
             {
+                print($"Route Completed for {gameObject.name}.");
                 active = false;
                 return;
             }
@@ -51,11 +53,17 @@ public class RoverDriver : MonoBehaviour
             float angle = Vector3.Angle(transform.forward, toTarget);
             if (isLeft(transform.forward, toTarget))
             {
+                print("Left turn required.");
                 StartCoroutine(TurnLeft());
             }
             else if (isRight(transform.forward, toTarget))
             {
+                print("Right turn required.");
                 StartCoroutine(TurnRight());
+            }
+            else
+            {
+                StartCoroutine(CrossIntersection());
             }
         }
 
@@ -65,12 +73,14 @@ public class RoverDriver : MonoBehaviour
 
     bool isRight(Vector3 from, Vector3 to)
     {
-        return Vector3.Angle(from, to) > 20;
+        float signedAngle = Vector3.SignedAngle(from, to, Vector3.up);
+        return signedAngle > 20f;
     }
 
     bool isLeft(Vector3 from, Vector3 to)
     {
-        return Vector3.Angle(from, to) < -20;
+        float signedAngle = Vector3.SignedAngle(from, to, Vector3.up);
+        return signedAngle < -20f;
     }
 
     private bool AdvanceWaypoint()
@@ -79,6 +89,7 @@ public class RoverDriver : MonoBehaviour
 
         int toNode = rover.path.Dequeue();
         currentTarget = map.NodeToWorld(toNode); // likely have to fix later to keep rover on right side of road
+        print("Currently traveling to node" + toNode);
         return true;
     }
 
@@ -165,6 +176,24 @@ public class RoverDriver : MonoBehaviour
             rb.MovePosition(rb.position + forward);
 
             // tick frame
+            yield return new WaitForFixedUpdate();
+        }
+
+        // wait until off intersection before setting _isTurning to false
+        yield return new WaitUntil(() => !IsAtIntersection());
+
+        _isTurning = false;
+    }
+
+    IEnumerator CrossIntersection()
+    {
+        _isTurning = true;
+
+        while (IsAtIntersection())
+        {
+            Vector3 forward = transform.forward * moveSpeed * 0.75f * Time.fixedDeltaTime;
+            rb.MovePosition(rb.position + forward);
+
             yield return new WaitForFixedUpdate();
         }
 

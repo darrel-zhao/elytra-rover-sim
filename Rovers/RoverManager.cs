@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sim.Rover;
 using UnityEngine;
 
@@ -42,9 +43,8 @@ public class RoverManager : MonoBehaviour
 
 
             // Copy path queue and figure out first destination (second in queue)
-            Queue<int> copy = data.path;
-            copy.Dequeue();
-            int next = copy.Dequeue();
+            print("Initialized Rover heading towards node " + data.path.ElementAt(1));
+            int next = data.path.ElementAt(1);
 
             // Instantiate rover
             GameObject roverGO;
@@ -96,11 +96,13 @@ public class RoverManager : MonoBehaviour
 
     bool isRight(Vector3 from, Vector3 to)
     {
-        return Vector3.Angle(from, to) > 20;
+        float signedAngle = Vector3.SignedAngle(from, to, Vector3.up);
+        return signedAngle > 20f;
     }
 
     bool isLeft(Vector3 from, Vector3 to)
     {
-        return Vector3.Angle(from, to) < -20;
+        float signedAngle = Vector3.SignedAngle(from, to, Vector3.up);
+        return signedAngle < -20f;
     }
 }
