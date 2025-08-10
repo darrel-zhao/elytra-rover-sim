@@ -53,7 +53,7 @@ public class SimManager : MonoBehaviour
         // roverSpawner.InitializeRovers();
 
         roverManager.OnRoversInitialized += HandleRoversInitialized;
-        List<(int s, int e)> assignments = new List<(int s, int e)> { (0, 8), (1, 6) }; // hardcoded for debugging purposes
+        List<(int s, int e)> assignments = new List<(int s, int e)> { (0, 8), (1, 6), (3, 5), (2, 8) }; // hardcoded for debugging purposes
         roverManager.AssignPathsandStart(assignments);
     }
 

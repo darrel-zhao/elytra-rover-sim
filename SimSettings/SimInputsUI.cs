@@ -8,13 +8,11 @@ public class SimInputsUI : MonoBehaviour
 {
 
     [Header("UI Elements")]
-    [SerializeField] private Button startButton;
-    [SerializeField] private Button createPathsButton;
+    [SerializeField] private Button continueButton;
     [SerializeField] private InputField gridRows;
     [SerializeField] private InputField gridCols;
     [SerializeField] private InputField numberOfRovers;
     [SerializeField] private InputField numTrashItems;
-
 
     [Header("Scene References")]
     [SerializeField] private GameObject settingsPanel;
@@ -68,7 +66,12 @@ public class SimInputsUI : MonoBehaviour
             }
         });
 
-        startButton.onClick.AddListener(OnStartClicked);
+        continueButton.onClick.AddListener(OnStartClicked);
+    }
+
+    private void OnContinueClicked()
+    {
+
     }
 
     private void OnStartClicked()

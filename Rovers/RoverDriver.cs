@@ -126,7 +126,7 @@ public class RoverDriver : MonoBehaviour
 
         // 2. Rotate left (CCW) by 90 degrees
         float rotatedSoFar = 0f;
-        float rotationSpeed = turnSpeed * 3f * Time.fixedDeltaTime;
+        float rotationSpeed = turnSpeed * 2f * Time.fixedDeltaTime;
 
         while (rotatedSoFar < 90f)
         {

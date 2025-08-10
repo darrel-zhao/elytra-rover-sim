@@ -91,6 +91,14 @@ public class RoverManager : MonoBehaviour
         rover.transform.forward = startHeading;
         rover.name = $"Rover {roverCount}";
 
+        // remove shadows
+        var renderers = rover.GetComponentsInChildren<MeshRenderer>();
+        foreach (var r in renderers)
+        {
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
+        }
+
         roverCameras.Add(rover.GetComponentInChildren<Camera>());
     }
 
