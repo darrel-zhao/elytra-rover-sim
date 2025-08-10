@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour
 {
-    RoverSpawner rs;
+    // RoverSpawner rs;
+    RoverManager rm;
     Camera[] allCameras;
 
     int activeCameraIndex = 0; // Index of the currently active camera
@@ -15,18 +16,19 @@ public class CameraManager : MonoBehaviour
 
     public Camera[] getCameras()
     {
-        rs = FindFirstObjectByType<RoverSpawner>();
-        allCameras = new Camera[numRoverPOVs*rs.roverCount + 1]; // +1 for the main camera
+        // rs = FindFirstObjectByType<RoverSpawner>();
+        rm = FindFirstObjectByType<RoverManager>();
+        allCameras = new Camera[numRoverPOVs*rm.roverCount + 1]; // +1 for the main camera
         allCameras[0] = Camera.main; // Assign the main camera to the first index
 
-        if (rs == null)
+        if (rm == null)
         {
             Debug.LogError("RoverSpawner not found in the scene.");
             return null;
         }
 
         // Get and add all rover cameras
-        Camera[] roverCams = rs.GetComponentsInChildren<Camera>();
+        Camera[] roverCams = rm.GetComponentsInChildren<Camera>();
 
         for (int i = 1; i < allCameras.Length; i++)
         {

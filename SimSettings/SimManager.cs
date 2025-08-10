@@ -1,10 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class SimManager : MonoBehaviour
 {
     [SerializeField] GridMapGenerator gridMapGenerator;
-    [SerializeField] RoverSpawner roverSpawner;
+    // [SerializeField] RoverSpawner roverSpawner;
+    [SerializeField] RoverManager roverManager;
     [SerializeField] TrashSpawner trashSpawner;
     [SerializeField] CameraManager cameraManager;
 
@@ -18,7 +20,7 @@ public class SimManager : MonoBehaviour
         gridMapGenerator.width = settings.gridMapCols;
         gridMapGenerator.height = settings.gridMapRows;
 
-        roverSpawner.numRovers = settings.numberOfRovers;
+        // roverSpawner.numRovers = settings.numberOfRovers;
         trashSpawner.numberOfTrashItems = settings.numTrashItems;
 
         Initialize();
@@ -32,7 +34,7 @@ public class SimManager : MonoBehaviour
             return;
         }
 
-        if (roverSpawner == null)
+        if (roverManager == null)
         {
             Debug.LogError("RoverSpawner is not assigned in the GameManager.");
             return;
@@ -47,13 +49,18 @@ public class SimManager : MonoBehaviour
         gridMapGenerator.OnMapInitialized -= HandleMapInitialized; // Unsubscribe to prevent multiple calls
         Debug.Log("Map initialized successfully.");
 
-        roverSpawner.OnRoversInitialized += HandleRoversInitialized;
-        roverSpawner.InitializeRovers();
+        // roverSpawner.OnRoversInitialized += HandleRoversInitialized;
+        // roverSpawner.InitializeRovers();
+
+        roverManager.OnRoversInitialized += HandleRoversInitialized;
+        List<(int s, int e)> assignments = new List<(int s, int e)> { (0, 2), (1, 5) };
+        roverManager.AssignPathsandStart(assignments);
     }
 
     void HandleRoversInitialized()
     {
-        roverSpawner.OnRoversInitialized -= HandleRoversInitialized; // Unsubscribe to prevent multiple calls
+        // roverSpawner.OnRoversInitialized -= HandleRoversInitialized; // Unsubscribe to prevent multiple calls
+        roverManager.OnRoversInitialized -= HandleRoversInitialized;
         Debug.Log("Rovers initialized successfully.");
 
         trashSpawner.OnTrashSpawned += HandleTrashSpawned;

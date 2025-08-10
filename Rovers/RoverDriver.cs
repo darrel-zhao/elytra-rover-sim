@@ -1,53 +1,85 @@
 using System.Collections;
-using QuickGraph;
 using UnityEngine;
-using UnityEngine.InputSystem;
-
-/// <summary>
-/// This script handles the driving a single rover within the simulation. The rover will move forward 
-/// at a constant speed and will turn randomly when it reaches an intersection. This script is attached
-/// to the Rover prefab, which is instantiated by the RoverSpawner script.
-/// </summary>
+using Sim.Rover;
 
 [RequireComponent(typeof(Rigidbody))]
-public class ExecuteDrive : MonoBehaviour
+public class RoverDriver : MonoBehaviour
 {
     float moveSpeed = 1f; // Speed of the rover
     float turnSpeed = 50f; // Speed of rotation
+    float turnTolerance = 20f;
+    bool _isTurning = false;
+    Rigidbody rb;
+    GridMapGenerator map;
+    Rover rover;
+    Vector3 currentTarget;
+    public bool active{ get; private set; }
 
-    private Rigidbody rb;
-    private bool _isTurning = false;
-
-    // for debugging purposes
-    [Header("Manual Drive Mode")]
-    public bool keyboardOverride = false;
-    public UndirectedGraph<int, TaggedEdge<int, double>> graph;
-
-    void Start()
+    public void Init(GridMapGenerator mapRef, Rover roverData)
     {
+        // Get map and rover data
+        map = mapRef;
+        rover = roverData;
+
+        // Initialize Rigidbody
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
+        // Prep the first destination
+        AdvanceWaypoint();
+        active = true;
     }
 
     void FixedUpdate()
     {
-        // WASD controls for debugging
-        if (keyboardOverride)
-            handleKeyboardInput();
-        else
-        {
-            // First do a simple test drive: drive in an o shape
-            Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
-            rb.MovePosition(rb.position + forward);
+        if (!active) return;
 
-            // Use a coroutine to turn right
-            if (IsAtIntersection() && !_isTurning)
+        Vector3 toTarget = currentTarget - rb.position;
+        if (IsAtIntersection() && !_isTurning)
+        {
+            bool nextExists = AdvanceWaypoint();
+            if (!nextExists)
             {
-                // StartCoroutine(TurnRight());
+                active = false;
+                return;
+            }
+
+            toTarget = currentTarget - rb.position; // likely will have to change to account for side of road
+
+            // check if turn is required
+            float angle = Vector3.Angle(transform.forward, toTarget);
+            if (isLeft(transform.forward, toTarget))
+            {
                 StartCoroutine(TurnLeft());
             }
+            else if (isRight(transform.forward, toTarget))
+            {
+                StartCoroutine(TurnRight());
+            }
         }
+
+        Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
+        rb.MovePosition(rb.position + forward);
+    }
+
+    bool isRight(Vector3 from, Vector3 to)
+    {
+        return Vector3.Angle(from, to) > 20;
+    }
+
+    bool isLeft(Vector3 from, Vector3 to)
+    {
+        return Vector3.Angle(from, to) < -20;
+    }
+
+    private bool AdvanceWaypoint()
+    {
+        if (rover.path == null || rover.path.Count == 0) return false;
+
+        int toNode = rover.path.Dequeue();
+        currentTarget = map.NodeToWorld(toNode); // likely have to fix later to keep rover on right side of road
+        return true;
     }
 
     private bool IsAtIntersection()
@@ -140,17 +172,5 @@ public class ExecuteDrive : MonoBehaviour
         yield return new WaitUntil(() => !IsAtIntersection());
 
         _isTurning = false;
-    }
-
-    void handleKeyboardInput()
-    {
-        if (Keyboard.current.wKey.isPressed)
-            rb.MovePosition(rb.position + transform.forward * moveSpeed * Time.fixedDeltaTime);
-        if (Keyboard.current.sKey.isPressed)
-            rb.MovePosition(rb.position - transform.forward * moveSpeed * Time.fixedDeltaTime);
-        if (Keyboard.current.aKey.isPressed)
-            rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, -turnSpeed * Time.fixedDeltaTime, 0f));
-        if (Keyboard.current.dKey.isPressed)
-            rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, turnSpeed * Time.fixedDeltaTime, 0f));
     }
 }

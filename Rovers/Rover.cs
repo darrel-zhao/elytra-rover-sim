@@ -6,11 +6,11 @@ namespace Sim.Rover
 {
     public class Rover
     {
-        public int id;
-        public int startNode;
-        public int goalNode;
-        public int trashCollected;
-        public Queue<int> path;
+        public int id{ get; private set; }
+        public int startNode{ get; private set; }
+        public int goalNode{ get; private set; }
+        public int trashCollected{ get; private set; }
+        public Queue<int> path{ get; private set; }
         public UndirectedGraph<int, TaggedEdge<int, double>> graph;
 
         public Rover(int id, int startNode, int goalNode, UndirectedGraph<int, TaggedEdge<int, double>> graph)
@@ -23,12 +23,12 @@ namespace Sim.Rover
             this.graph = graph;
         }
 
-        public void ComputePath(int startNode, int goalNode)
+        public bool ComputePath(int startNode, int goalNode)
         {
             if (graph == null || !graph.ContainsVertex(startNode) || !graph.ContainsVertex(goalNode))
             {
                 Debug.LogError("Graph not assigned or invalid nodes");
-                return;
+                return false;
             }
 
             Dictionary<int, int> cameFrom = new Dictionary<int, int>();
@@ -58,7 +58,7 @@ namespace Sim.Rover
             if (!cameFrom.ContainsKey(goalNode))
             {
                 Debug.LogError("No path found");
-                return;
+                return false;
             }
 
             // Reconstruct path
@@ -75,8 +75,10 @@ namespace Sim.Rover
                 path.Enqueue(reversePath.Pop());
 
             Debug.Log($"Path computed: {string.Join(" -> ", path)}");
+
+            return path != null && path.Count > 0;
         }
 
-        
+
     }
 }
