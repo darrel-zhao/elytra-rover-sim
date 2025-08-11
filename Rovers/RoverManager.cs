@@ -16,7 +16,7 @@ public class RoverManager : MonoBehaviour
 
     // Rover should spawn on the side of the road, not middle
     float spawnXOffset = 1.5f;
-    float spawnZOffset = 2.3f; // remove later
+    float spawnZOffset = 2.3f;
 
     // Housekeeping variables 
     public int roverCount = 0;
@@ -69,19 +69,21 @@ public class RoverManager : MonoBehaviour
         // calculate rover positioning
         if (isRight(Vector3.forward, startHeading))
         {
-            print("right");
             pos.x += spawnZOffset;
             pos.z -= spawnXOffset;
         }
         else if (isLeft(Vector3.forward, startHeading))
         {
-            print("left");
             pos.x -= spawnZOffset;
             pos.z += spawnXOffset;
         }
+        else if (isBehind(Vector3.forward, startHeading))
+        {
+            pos.x -= spawnXOffset;
+            pos.z -= spawnZOffset;
+        }
         else
         {
-            print("none");
             pos.x += spawnXOffset;
             pos.z += spawnZOffset;
         }
@@ -102,15 +104,21 @@ public class RoverManager : MonoBehaviour
         roverCameras.Add(rover.GetComponentInChildren<Camera>());
     }
 
+    bool isBehind(Vector3 from, Vector3 to)
+    {
+        float angle = Vector3.Angle(from, to);
+        return angle >= 160f && angle <= 180f;
+    }
+
     bool isRight(Vector3 from, Vector3 to)
     {
         float signedAngle = Vector3.SignedAngle(from, to, Vector3.up);
-        return signedAngle > 20f;
+        return signedAngle > 20f && signedAngle <= 90f;
     }
 
     bool isLeft(Vector3 from, Vector3 to)
     {
         float signedAngle = Vector3.SignedAngle(from, to, Vector3.up);
-        return signedAngle < -20f;
+        return signedAngle < -20f && signedAngle >= -90f;
     }
 }

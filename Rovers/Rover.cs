@@ -9,7 +9,7 @@ namespace Sim.Rover
         public int id{ get; private set; }
         public int startNode{ get; private set; }
         public int goalNode{ get; private set; }
-        public int trashCollected{ get; private set; }
+        public int trashCollected{ get; set; }
         public Queue<int> path{ get; private set; }
         public UndirectedGraph<int, TaggedEdge<int, double>> graph;
 

@@ -11,7 +11,19 @@ public class TrashCollector : MonoBehaviour
             // Destroy the trash object
             Destroy(other.gameObject);
 
-            // Optionally, you can add logic to update the score or notify the player
+            var roverDriver = GetComponentInParent<RoverDriver>();
+            if (roverDriver != null)
+            {
+                // Increment the trash collected count in the rover
+                roverDriver.rover.trashCollected++;
+            }
+
+            var simManager = FindFirstObjectByType<SimManager>();
+            if (simManager != null)
+            {
+                simManager.totalTrashCollected++;
+            }
+
             Debug.Log("Trash collected: " + other.name);
         }
     }

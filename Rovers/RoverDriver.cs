@@ -5,13 +5,13 @@ using Sim.Rover;
 [RequireComponent(typeof(Rigidbody))]
 public class RoverDriver : MonoBehaviour
 {
-    float moveSpeed = 1f; // Speed of the rover
+    float moveSpeed = 0.5f; // Speed of the rover
     float turnSpeed = 50f; // Speed of rotation
     // float turnTolerance = 20f;
     bool _isTurning = false;
     Rigidbody rb;
     GridMapGenerator map;
-    Rover rover;
+    public Rover rover;
     Vector3 currentTarget;
     public bool active { get; private set; }
 
@@ -52,19 +52,13 @@ public class RoverDriver : MonoBehaviour
             // check if turn is required
             float angle = Vector3.Angle(transform.forward, toTarget);
             if (isLeft(transform.forward, toTarget))
-            {
-                print("Left turn required.");
                 StartCoroutine(TurnLeft());
-            }
+
             else if (isRight(transform.forward, toTarget))
-            {
-                print("Right turn required.");
                 StartCoroutine(TurnRight());
-            }
+                
             else
-            {
                 StartCoroutine(CrossIntersection());
-            }
         }
 
         Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
@@ -89,7 +83,6 @@ public class RoverDriver : MonoBehaviour
 
         int toNode = rover.path.Dequeue();
         currentTarget = map.NodeToWorld(toNode); // likely have to fix later to keep rover on right side of road
-        print("Currently traveling to node" + toNode);
         return true;
     }
 
@@ -112,7 +105,7 @@ public class RoverDriver : MonoBehaviour
         _isTurning = true;
 
         float crossDistance = 1.5f;
-        float crossDuration = crossDistance / moveSpeed;
+        float crossDuration = crossDistance / moveSpeed * 1.08f;
         float elapsed = 0f;
 
         // 1. Cross to opposite end of intersection in straight line
@@ -126,7 +119,7 @@ public class RoverDriver : MonoBehaviour
 
         // 2. Rotate left (CCW) by 90 degrees
         float rotatedSoFar = 0f;
-        float rotationSpeed = turnSpeed * 2f * Time.fixedDeltaTime;
+        float rotationSpeed = turnSpeed * 2.4f * Time.fixedDeltaTime;
 
         while (rotatedSoFar < 90f)
         {
@@ -160,7 +153,7 @@ public class RoverDriver : MonoBehaviour
         _isTurning = true;
 
         float rotatedSoFar = 0f;
-        float speed = turnSpeed * 3f * Time.fixedDeltaTime;
+        float speed = turnSpeed * 1.5f * Time.fixedDeltaTime;
 
         while (rotatedSoFar < turnAngle)
         {
@@ -168,8 +161,6 @@ public class RoverDriver : MonoBehaviour
             float delta = Mathf.Min(speed, turnAngle - rotatedSoFar);
             rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, delta, 0f));
             rotatedSoFar += delta;
-
-            // print(rb.rotation.eulerAngles.y);
 
             // move forward a bit
             Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime * 0.5f; // move forward a bit less while turning

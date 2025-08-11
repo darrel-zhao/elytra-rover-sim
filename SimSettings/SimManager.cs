@@ -5,11 +5,10 @@ using UnityEngine.InputSystem;
 public class SimManager : MonoBehaviour
 {
     [SerializeField] GridMapGenerator gridMapGenerator;
-    // [SerializeField] RoverSpawner roverSpawner;
     [SerializeField] RoverManager roverManager;
     [SerializeField] TrashSpawner trashSpawner;
     [SerializeField] CameraManager cameraManager;
-
+    public int totalTrashCollected { get; set; }
     private SimSettings settings;
 
     public void SetSettings(SimSettings simSettings)
@@ -19,6 +18,7 @@ public class SimManager : MonoBehaviour
         // Apply settings to respective components
         gridMapGenerator.width = settings.gridMapCols;
         gridMapGenerator.height = settings.gridMapRows;
+        totalTrashCollected = 0;
 
         // roverSpawner.numRovers = settings.numberOfRovers;
         trashSpawner.numberOfTrashItems = settings.numTrashItems;
@@ -53,7 +53,7 @@ public class SimManager : MonoBehaviour
         // roverSpawner.InitializeRovers();
 
         roverManager.OnRoversInitialized += HandleRoversInitialized;
-        List<(int s, int e)> assignments = new List<(int s, int e)> { (0, 8), (1, 6), (3, 5), (2, 8) }; // hardcoded for debugging purposes
+        List<(int s, int e)> assignments = new List<(int s, int e)> { (0, 7), (4, 1), (3, 5), (2, 8) }; // hardcoded for debugging purposes
         roverManager.AssignPathsandStart(assignments);
     }
 
