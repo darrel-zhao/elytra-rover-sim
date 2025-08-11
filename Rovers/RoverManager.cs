@@ -22,13 +22,21 @@ public class RoverManager : MonoBehaviour
     public int roverCount = 0;
     List<Camera> roverCameras;
 
+    SimSettings settings;
+
     // Event handling
     public event Action OnRoversInitialized;
 
-    public void AssignPathsandStart(List<(int start, int end)> assignments)
+    public void AssignPathsandStart(List<(int start, int end)> assignments, int numberOfRovers)
     {
+        numRovers = numberOfRovers;
+        if (assignments.Count != numRovers)
+        {
+            Debug.LogWarning("Number of assignments does not match number of rovers.");
+        }
+
         roverCameras = new List<Camera>();
-        for (int i = 0; i < assignments.Count; i++)
+        for (int i = 0; i < numRovers; i++)
         {
             // Create rover instance
             var (s, e) = assignments[i];
@@ -88,18 +96,10 @@ public class RoverManager : MonoBehaviour
             pos.z += spawnZOffset;
         }
 
-        roverCount++;
         rover = Instantiate(roverPrefab, pos, Quaternion.identity, transform);
         rover.transform.forward = startHeading;
         rover.name = $"Rover {roverCount}";
-
-        // remove shadows
-        var renderers = rover.GetComponentsInChildren<MeshRenderer>();
-        foreach (var r in renderers)
-        {
-            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            r.receiveShadows = false;
-        }
+        roverCount++;
 
         roverCameras.Add(rover.GetComponentInChildren<Camera>());
     }

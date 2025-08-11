@@ -49,12 +49,8 @@ public class SimManager : MonoBehaviour
         gridMapGenerator.OnMapInitialized -= HandleMapInitialized; // Unsubscribe to prevent multiple calls
         Debug.Log("Map initialized successfully.");
 
-        // roverSpawner.OnRoversInitialized += HandleRoversInitialized;
-        // roverSpawner.InitializeRovers();
-
         roverManager.OnRoversInitialized += HandleRoversInitialized;
-        List<(int s, int e)> assignments = new List<(int s, int e)> { (0, 7), (4, 1), (3, 5), (2, 8) }; // hardcoded for debugging purposes
-        roverManager.AssignPathsandStart(assignments);
+        roverManager.AssignPathsandStart(settings.assignments, settings.numberOfRovers);
     }
 
     void HandleRoversInitialized()

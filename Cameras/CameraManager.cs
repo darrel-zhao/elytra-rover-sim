@@ -42,7 +42,7 @@ public class CameraManager : MonoBehaviour
         }
         else
         {
-            Debug.Log($"{allCameras.Length} cameras found in RoverSpawner.");
+            Debug.Log($"{allCameras.Length} cameras found in RoverManager.");
         }
 
         // Set only the first camera (main camera) as active
