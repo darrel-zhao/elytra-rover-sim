@@ -22,8 +22,6 @@ public class RoverManager : MonoBehaviour
     public int roverCount = 0;
     List<Camera> roverCameras;
 
-    SimSettings settings;
-
     // Event handling
     public event Action OnRoversInitialized;
 

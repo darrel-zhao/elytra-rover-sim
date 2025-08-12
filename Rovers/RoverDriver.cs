@@ -13,13 +13,14 @@ public class RoverDriver : MonoBehaviour
     bool _isTurning = false;
     bool _isAdjusting = false;
     int completedNodes = 0;
-    int previousNode ;
+    int previousNode;
     Rigidbody rb;
     GridMapGenerator map;
     public Rover rover;
     Vector3 currentTarget;
     TrashFinder trashFinder;
     Vector3 previousPos = Vector3.zero;
+    SimManager simManager;
     public bool active { get; private set; }
 
     public void Init(GridMapGenerator mapRef, Rover roverData)
@@ -28,6 +29,7 @@ public class RoverDriver : MonoBehaviour
         map = mapRef;
         rover = roverData;
         trashFinder = GetComponentInChildren<TrashFinder>();
+        simManager = FindFirstObjectByType<SimManager>();
 
         // Initialize Rigidbody
         rb = GetComponent<Rigidbody>();
@@ -52,6 +54,7 @@ public class RoverDriver : MonoBehaviour
             {
                 print($"Route Completed for {gameObject.name}.");
                 active = false;
+                simManager.inactiveRovers += 1;
                 return;
             }
 
@@ -76,7 +79,7 @@ public class RoverDriver : MonoBehaviour
         Vector3 roverPos;
         // calculate orthogonal normalized vector to rover's forward direction
         Vector3 ortho = Vector3.Cross(transform.forward, Vector3.up).normalized;
-        Vector3 offset = ortho * 0.3f;
+        Vector3 offset = ortho * 0.2f;
         roverPos = rb.position - offset;
 
         if (nextTrashPath != previousPos)
@@ -97,15 +100,22 @@ public class RoverDriver : MonoBehaviour
         Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + forward);
 
-        // Create a ternary that assigns the smaller component of toTarget to distError
-        float distError = toTarget.x <= toTarget.z ? toTarget.x : toTarget.z;
-        // print($"Distance Error: {distError}");
+        // Adjust rover if slightly off course
+        float distError = Math.Abs(toTarget.x) <= Math.Abs(toTarget.z) ? toTarget.x : toTarget.z;
+        print($"Distance Error: {distError}");
         Debug.DrawLine(rb.position, currentTarget, Color.red);
 
-        if (Math.Abs(distError) > 0.1f && !_isAdjusting && !_isTurning)
+        if (
+            (distError > 0.3f ||
+            distError < -0.1f ||
+            (toTarget.magnitude <= 0.5f && Vector3.Angle(transform.forward, currentTarget - rb.position) > 3f)) && !_isAdjusting && !_isTurning
+            )
         {
             StartCoroutine(AdjustCourse(currentTarget - rb.position));
         }
+
+        if (_isAdjusting)
+            Debug.DrawRay(rb.position, (currentTarget - rb.position).normalized * 3f, Color.blue);
     }
 
     IEnumerator AdjustCourse(Vector3 targetDir)
@@ -115,18 +125,21 @@ public class RoverDriver : MonoBehaviour
         // print("Adjusting Course...");
         while (Vector3.Angle(transform.forward, targetDir) > 3f)
         {
+            // Prevents rapid adjustments (twitching of the rover)
             if (Vector3.Angle(transform.forward, targetDir) < 4f)
             {
                 _isAdjusting = false;
                 yield break; // Exit if the angle is small enough
             }
+
+            // Adjust rover rotation
             if (isRight(transform.forward, targetDir, 2f))
             {
-                rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, turnSpeed * 0.5f * Time.fixedDeltaTime, 0f));
+                rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, turnSpeed * 0.3f * Time.fixedDeltaTime, 0f));
             }
             else if (isLeft(transform.forward, targetDir, 2f))
             {
-                rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, -turnSpeed * 0.5f * Time.fixedDeltaTime, 0f));
+                rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, -turnSpeed * 0.3f * Time.fixedDeltaTime, 0f));
             }
 
             
@@ -140,7 +153,6 @@ public class RoverDriver : MonoBehaviour
     bool isRight(Vector3 from, Vector3 to, float tolerance = 20f)
     {
         float signedAngle = Vector3.SignedAngle(from, to, Vector3.up);
-        // print(signedAngle);
         return signedAngle > tolerance;
     }
 
@@ -152,7 +164,7 @@ public class RoverDriver : MonoBehaviour
 
     private bool AdvanceWaypoint()
     {
-        if (rover.path == null || rover.path.Count == 0) return false;
+        if (rover == null || rover.path == null || rover.path.Count == 0) return false;
 
         Vector3 nextDirection = Vector3.zero;
         if (completedNodes == 0)
@@ -186,6 +198,18 @@ public class RoverDriver : MonoBehaviour
         }
 
         return false; // Not at an intersection
+    }
+
+    void AdjustForIntersection()
+    {
+        // Adjust rover rotation if slightly off course
+        Vector3 intersectionOffset = currentTarget - rb.position;
+        float angleBetween = Vector3.SignedAngle(transform.forward, intersectionOffset.normalized, Vector3.up);
+        if (angleBetween < -2f || angleBetween > 2f)
+        {
+            // Rotate towards the intersection
+            rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, -angleBetween, 0f));
+        }
     }
 
     IEnumerator TurnLeftNinety()
@@ -265,6 +289,7 @@ public class RoverDriver : MonoBehaviour
 
     IEnumerator CrossIntersection()
     {
+        AdjustForIntersection();
         _isTurning = true;
 
         while (IsAtIntersection())

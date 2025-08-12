@@ -9,6 +9,7 @@ public class SimManager : MonoBehaviour
     [SerializeField] TrashSpawner trashSpawner;
     [SerializeField] CameraManager cameraManager;
     public int totalTrashCollected { get; set; }
+    public int inactiveRovers { get; set; } = 0;
     private SimSettings settings;
 
     public void SetSettings(SimSettings simSettings)
@@ -83,5 +84,21 @@ public class SimManager : MonoBehaviour
         // Camera Switching: if "c" is pressed, switch to the next camera
         if (Keyboard.current.cKey.wasPressedThisFrame)
             cameraManager.SwitchNextCamera();
+        
+        if (settings != null && inactiveRovers == settings.numberOfRovers)
+        {
+            print($"Simulation Complete! Here are the results: ");
+            print($"Total Trash Collected: {totalTrashCollected}");
+
+            // Calculate efficacy of each rover
+            for (int i = 0; i < roverManager.numRovers; i++)
+            {
+                var rover = roverManager.transform.GetChild(i).GetComponent<RoverDriver>().rover;
+                var detected = roverManager.transform.GetChild(i).GetComponentInChildren<TrashFinder>().detectedCount;
+
+                print($"Rover {rover.id}: {rover.trashCollected / (float)detected * 100}% efficacy ({rover.trashCollected}/{detected} collected)");
+            }
+            inactiveRovers = 0;
+        }
     }
 }

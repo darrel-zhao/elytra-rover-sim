@@ -6,6 +6,7 @@ public class TrashFinder : MonoBehaviour
 {
     public Vector3 driveToPos { get; private set; } 
     List<TrashIdentifier> detectedTrash = new List<TrashIdentifier>();
+    public int detectedCount{ get; private set; }
 
     public void OnTriggerEnter(Collider other)
     {
@@ -28,6 +29,7 @@ public class TrashFinder : MonoBehaviour
             {
                 if (t == null || t.transform == null) continue; // Skip if the trash object is destroyed
                 averagePosition += t.transform.position;
+                detectedCount++;
             }
             averagePosition /= detectedTrash.Count;
 
