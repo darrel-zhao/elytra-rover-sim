@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Attached to the MouthCollider of the rover
 public class TrashCollector : MonoBehaviour
 {
     public void OnTriggerEnter(Collider other)

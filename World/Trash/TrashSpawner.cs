@@ -129,6 +129,7 @@ public class TrashSpawner : MonoBehaviour
         // Randomly offset the spawn position on either side of the road
         Vector3 randomOffset = orthogonalDirection * UnityEngine.Random.Range(-roadWidth / 2f, roadWidth / 2f);
         pos += randomOffset;
+        pos.y = 0.1f; // Ensure the trash spawns slightly above the ground to avoid clipping issues
 
         return pos;
     }
