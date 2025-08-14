@@ -13,10 +13,14 @@ public class TrashCollector : MonoBehaviour
             Destroy(other.gameObject);
 
             var roverDriver = GetComponentInParent<RoverDriver>();
-            if (roverDriver != null)
+            if (roverDriver.rover != null)
             {
                 // Increment the trash collected count in the rover
                 roverDriver.rover.trashCollected++;
+            }
+            else
+            {
+                Debug.LogError("Rover reference is missing in RoverDriver.");
             }
 
             var simManager = FindFirstObjectByType<SimManager>();

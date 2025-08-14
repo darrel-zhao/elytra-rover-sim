@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Sim.Rover;
 using UnityEngine;
 
 // Attached to DetectionCollider of the rover prefab
@@ -7,6 +8,24 @@ public class TrashFinder : MonoBehaviour
     public Vector3 driveToPos { get; private set; } 
     List<TrashIdentifier> detectedTrash = new List<TrashIdentifier>();
     public int detectedCount{ get; private set; }
+    public RoverDriver roverDriver;
+    BoxCollider boxCollider;
+
+    void Start()
+    {
+        boxCollider = GetComponent<BoxCollider>();
+        roverDriver = GetComponentInParent<RoverDriver>(); 
+        if (!roverDriver)
+        {
+            Debug.LogError("RoverDriver component not found in parent.");
+        }
+    }
+
+    void Update()
+    {
+        if (roverDriver.IsAtIntersection()) { boxCollider.enabled = false; }
+        else { boxCollider.enabled = true; }
+    }
 
     public void OnTriggerEnter(Collider other)
     {

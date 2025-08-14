@@ -1,8 +1,9 @@
 using System.Collections;
 using UnityEngine;
 using Sim.Rover;
-using Unity.VisualScripting;
 using System;
+using UnityEditor.SpeedTree.Importer;
+using System.Timers;
 
 [RequireComponent(typeof(Rigidbody))]
 public class RoverDriver : MonoBehaviour
@@ -35,7 +36,6 @@ public class RoverDriver : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        rb.centerOfMass = new Vector3(0f, -0.5f, 0f); // Adjust center of mass for stability
 
         // Prep the first destination
         AdvanceWaypoint();
@@ -102,12 +102,11 @@ public class RoverDriver : MonoBehaviour
 
         // Adjust rover if slightly off course
         float distError = Math.Abs(toTarget.x) <= Math.Abs(toTarget.z) ? toTarget.x : toTarget.z;
-        print($"Distance Error: {distError}");
+        // print($"Distance Error: {distError}");
         Debug.DrawLine(rb.position, currentTarget, Color.red);
 
         if (
-            (distError > 0.3f ||
-            distError < -0.1f ||
+            (Math.Abs(distError) >0.1f ||
             (toTarget.magnitude <= 0.5f && Vector3.Angle(transform.forward, currentTarget - rb.position) > 3f)) && !_isAdjusting && !_isTurning
             )
         {
@@ -121,52 +120,55 @@ public class RoverDriver : MonoBehaviour
     IEnumerator AdjustCourse(Vector3 targetDir)
     {
         _isAdjusting = true;
+        // Start a timer to prevent long adjustments
+        float elapsed = Time.time;
+        float maxDuration = 2f; // seconds
 
-        // print("Adjusting Course...");
+        if (IsAtIntersection())
+        {
+            _isAdjusting = false;
+            yield break; // Don't adjust course if at an intersection  
+        }
+
         while (Vector3.Angle(transform.forward, targetDir) > 3f)
         {
-            // Prevents rapid adjustments (twitching of the rover)
-            if (Vector3.Angle(transform.forward, targetDir) < 4f)
-            {
-                _isAdjusting = false;
-                yield break; // Exit if the angle is small enough
-            }
-
             // Adjust rover rotation
-            if (isRight(transform.forward, targetDir, 2f))
+            if (isRight(transform.forward, targetDir, 1f))
             {
                 rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, turnSpeed * 0.3f * Time.fixedDeltaTime, 0f));
             }
-            else if (isLeft(transform.forward, targetDir, 2f))
+            else if (isLeft(transform.forward, targetDir, 1f))
             {
                 rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, -turnSpeed * 0.3f * Time.fixedDeltaTime, 0f));
             }
 
-            
+            // tick timer
+            if (Time.time - elapsed > maxDuration) break;
             yield return new WaitForFixedUpdate();
         }
-
-        // print("Course Adjusted.");
 
         _isAdjusting = false;
     }
     bool isRight(Vector3 from, Vector3 to, float tolerance = 20f)
     {
-        float signedAngle = Vector3.SignedAngle(from, to, Vector3.up);
-        return signedAngle > tolerance;
+        Vector3 fromProjection = Vector3.ProjectOnPlane(from, Vector3.up).normalized;
+        Vector3 toProjection = Vector3.ProjectOnPlane(to, Vector3.up).normalized;
+        float signedAngle = Vector3.SignedAngle(fromProjection, toProjection, Vector3.up);
+        return signedAngle > tolerance && signedAngle <= 90f;
     }
 
     bool isLeft(Vector3 from, Vector3 to, float tolerance = 20f)
     {
-        float signedAngle = Vector3.SignedAngle(from, to, Vector3.up);
-        return signedAngle < -tolerance;
+        Vector3 fromProjection = Vector3.ProjectOnPlane(from, Vector3.up).normalized;
+        Vector3 toProjection = Vector3.ProjectOnPlane(to, Vector3.up).normalized;
+        float signedAngle = Vector3.SignedAngle(fromProjection, toProjection, Vector3.up);
+        return signedAngle < -tolerance && signedAngle >= -90f;
     }
 
     private bool AdvanceWaypoint()
     {
         if (rover == null || rover.path == null || rover.path.Count == 0) return false;
 
-        Vector3 nextDirection = Vector3.zero;
         if (completedNodes == 0)
         {
             previousNode = rover.path.Dequeue(); // Remove the first node, as that is the start node
@@ -174,7 +176,7 @@ public class RoverDriver : MonoBehaviour
 
         int toNode = rover.path.Dequeue();
         currentTarget = map.NodeToWorld(toNode);
-        nextDirection = (currentTarget - map.NodeToWorld(previousNode)).normalized;
+        Vector3 nextDirection = (currentTarget - map.NodeToWorld(previousNode)).normalized;
         previousNode = toNode;
 
         // Shift currentTarget to the right side of the road
@@ -186,7 +188,7 @@ public class RoverDriver : MonoBehaviour
         return true;
     }
 
-    private bool IsAtIntersection()
+    public bool IsAtIntersection()
     {
         Collider[] hitcolliders = Physics.OverlapSphere(transform.position, 0.1f);
         foreach (var hit in hitcolliders)
@@ -208,7 +210,7 @@ public class RoverDriver : MonoBehaviour
         if (angleBetween < -2f || angleBetween > 2f)
         {
             // Rotate towards the intersection
-            rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, -angleBetween, 0f));
+            rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, angleBetween, 0f));
         }
     }
 
@@ -217,7 +219,7 @@ public class RoverDriver : MonoBehaviour
         _isTurning = true;
 
         float crossDistance = 1.5f;
-        float crossDuration = crossDistance / moveSpeed * 1.08f;
+        float crossDuration = crossDistance / moveSpeed * 1f;
         float elapsed = 0f;
 
         // 1. Cross to opposite end of intersection in straight line
@@ -256,6 +258,7 @@ public class RoverDriver : MonoBehaviour
         }
 
         yield return new WaitUntil(() => !IsAtIntersection());
+
         _isTurning = false;
     }
 
@@ -304,6 +307,7 @@ public class RoverDriver : MonoBehaviour
         yield return new WaitUntil(() => !IsAtIntersection());
 
         _isTurning = false;
+        
     }
 
 
