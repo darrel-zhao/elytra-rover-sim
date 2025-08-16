@@ -202,11 +202,17 @@ public class RoverDriver : MonoBehaviour
         return false; // Not at an intersection
     }
 
-    void AdjustForIntersection()
+    void AdjustForIntersection(float additional = 0f)
     {
         // Adjust rover rotation if slightly off course
         Vector3 intersectionOffset = currentTarget - rb.position;
-        float angleBetween = Vector3.SignedAngle(transform.forward, intersectionOffset.normalized, Vector3.up);
+        float angleBetween = Vector3.SignedAngle(transform.forward, intersectionOffset.normalized, Vector3.up) + additional;
+
+        if (additional != 0f)
+        {
+            angleBetween -= additional;
+        }
+
         if (angleBetween < -2f || angleBetween > 2f)
         {
             // Rotate towards the intersection
@@ -292,7 +298,7 @@ public class RoverDriver : MonoBehaviour
 
     IEnumerator CrossIntersection()
     {
-        AdjustForIntersection();
+        AdjustForIntersection(additional: 5f);
         _isTurning = true;
 
         while (IsAtIntersection())

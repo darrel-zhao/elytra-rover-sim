@@ -89,15 +89,17 @@ public class SimManager : MonoBehaviour
         {
             print($"Simulation Complete! Here are the results: ");
             print($"Total Trash Collected: {totalTrashCollected}");
-
+            int totalDetected = 0;
             // Calculate efficacy of each rover
             for (int i = 0; i < roverManager.numRovers; i++)
             {
                 var rover = roverManager.transform.GetChild(i).GetComponent<RoverDriver>().rover;
                 var detected = roverManager.transform.GetChild(i).GetComponentInChildren<TrashFinder>().detectedCount;
+                totalDetected += detected;
 
                 print($"Rover {rover.id}: {rover.trashCollected / (float)detected * 100}% efficacy ({rover.trashCollected}/{detected} collected)");
             }
+            print($"Fleet Efficacy: {totalTrashCollected / (float)totalDetected * 100}% ({totalTrashCollected}/{totalDetected} collected)");
             inactiveRovers = 0;
         }
     }

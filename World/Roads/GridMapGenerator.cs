@@ -15,6 +15,7 @@ public class GridMapGenerator : MonoBehaviour
     [Header("Grid Prefab")]
     public GameObject intersectionPrefab;
     public GameObject roadPrefab;
+    public GameObject BuildingsPrefab;
 
     // Parameters
     public int numNodes;
@@ -38,8 +39,28 @@ public class GridMapGenerator : MonoBehaviour
     {
         ClearMap();
         BuildMap();
+        AddBuildings();
 
         OnMapInitialized?.Invoke();
+    }
+
+    void AddBuildings()
+    {
+        // Instantiate buildings at random positions on the grid
+        for (int h = 0; h < height - 1; h++) // Example: 10% of the grid size
+        {
+            for (int w = 0; w < width - 1; w++)
+            {
+                // find x and z position between two nodes horizontally and vertically
+                Vector3 buildingPosition = Vector3.zero;
+                float buildingPositionX = (NodeToWorld(h * width + w).x + NodeToWorld(h * width + w + 1).x) / 2;
+                float buildingPositionZ = (NodeToWorld(h * width + w).z + NodeToWorld((h + 1) * width + w).z) / 2;
+                buildingPosition.x += buildingPositionX;
+                buildingPosition.z += buildingPositionZ;
+
+                Instantiate(BuildingsPrefab, buildingPosition, Quaternion.identity, transform);
+            }
+        }
     }
 
     void BuildMap()
