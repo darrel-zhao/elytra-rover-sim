@@ -2,7 +2,7 @@
 Author: Darrel Zhao
 
 ## Description
-The purpose of this project is to create a "sandbox" of sorts to help Elytra Robotics test deployments virtually rather than only gathering information from the field. This allows us to gather more data on rover fleet analytics, including rover trash pickup efficacy, RL policy, and fleet configurations.
+The purpose of this project is to create a "sandbox" of sorts to help Elytra Robotics test deployments virtually rather than only gathering information from the field. This allows us to boost our data collection ten-fold - analyzing factors like rover efficacy, fleet efficacy, and path planning for optimal trash pickup.
 
 ## Demo Video
 Here is a little video that demonstrates some of the key features of the Elytra Rover Simulation: <br>
