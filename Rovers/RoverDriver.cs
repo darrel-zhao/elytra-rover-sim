@@ -23,12 +23,18 @@ public class RoverDriver : MonoBehaviour
     Vector3 previousPos = Vector3.zero;
     SimManager simManager;
     public bool active { get; private set; }
+    bool randomDrive = false;
 
     public void Init(GridMapGenerator mapRef, Rover roverData)
     {
         // Get map and rover data
         map = mapRef;
         rover = roverData;
+        if (rover == null)
+        {
+            randomDrive = true;
+        }
+
         trashFinder = GetComponentInChildren<TrashFinder>();
         simManager = FindFirstObjectByType<SimManager>();
 
@@ -46,6 +52,34 @@ public class RoverDriver : MonoBehaviour
     {
         if (!active) return;
 
+        if (randomDrive)
+            RandomDrive();
+        else
+            FollowPath();
+    }
+
+    void RandomDrive()
+    {
+        if (IsAtIntersection() && !_isTurning)
+        {
+            // Randomly choose to turn left, right, or go straight
+            int choice = UnityEngine.Random.Range(0, 3); // 0: left, 1: straight, 2: right
+
+            if (choice == 0)
+                StartCoroutine(TurnLeftNinety());
+            else if (choice == 2)
+                StartCoroutine(TurnRightNinety());
+            else
+                StartCoroutine(CrossIntersection());
+        }
+
+        // Move forward continuously
+        Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
+        rb.MovePosition(rb.position + forward);
+    }
+    
+    void FollowPath()
+    {
         Vector3 toTarget = currentTarget - rb.position;
         if (IsAtIntersection() && !_isTurning)
         {
@@ -61,7 +95,6 @@ public class RoverDriver : MonoBehaviour
             toTarget = currentTarget - rb.position;
 
             // check if turn is required
-            float angle = Vector3.Angle(transform.forward, toTarget);
             if (isLeft(transform.forward, toTarget))
                 StartCoroutine(TurnLeftNinety());
 

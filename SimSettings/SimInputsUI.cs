@@ -113,13 +113,15 @@ public class SimInputsUI : MonoBehaviour
 
     public List<(int start, int end)> ReadAssignments()
     {
-        var result = new List<(int, int)>(_rows.Count);
+        var result = new List<(int, int)>();
         for (int i = 0; i < _rows.Count; i++)
         {
             print("start: " + _rows[i].startField.text + ", end: " + _rows[i].endField.text);
             int s = ParseSafe(_rows[i].startField.text);
             int e = ParseSafe(_rows[i].endField.text);
-            result.Add((s, e));
+
+            if (s > -1 && e > -1)
+                result.Add((s, e));
         }
 
         return result;

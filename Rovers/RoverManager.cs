@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using QuickGraph;
 using Sim.Rover;
 using UnityEngine;
 
@@ -25,12 +26,34 @@ public class RoverManager : MonoBehaviour
     // Event handling
     public event Action OnRoversInitialized;
 
+    bool randomSpawn = false;
+
     public void AssignPathsandStart(List<(int start, int end)> assignments, int numberOfRovers)
     {
         numRovers = numberOfRovers;
-        if (assignments.Count != numRovers)
+
+        if (assignments == null || assignments.Count == 0)
         {
-            Debug.LogWarning("Number of assignments does not match number of rovers.");
+            for (int i = 0; i < numRovers; i++)
+            {
+                Vector3 pos = map.NodeToWorld(i);
+                // Randomly assign start and end nodes
+                GameObject roverGO;
+                int startNode = i;
+
+                // get adjacent nodes from startNode
+                int next = map.graph.AdjacentEdges(startNode)
+                    .Select(edge => edge.GetOtherVertex(startNode))
+                    .OrderBy(x => UnityEngine.Random.value)
+                    .FirstOrDefault();
+
+                SpawnRover(startNode, next, out roverGO);
+                var ctrl = roverGO.GetComponent<RoverDriver>();
+
+                ctrl.Init(map, null);
+            }
+
+            return;
         }
 
         roverCameras = new List<Camera>();
@@ -46,7 +69,6 @@ public class RoverManager : MonoBehaviour
                 Debug.LogError($"No path for rover {i} from {s} to {e}.");
                 return;
             }
-
 
             // Copy path queue and figure out first destination (second in queue)
             print("Initialized Rover heading towards node " + data.path.ElementAt(1));
