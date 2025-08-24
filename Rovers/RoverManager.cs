@@ -56,6 +56,15 @@ public class RoverManager : MonoBehaviour
                 var data = new Rover(i, startNode, -1, map.graph); // -1 indicates no goal
 
                 ctrl.Init(map, data);
+                ctrl.currentTarget = map.NodeToWorld(next);
+
+                // Shift currentTarget to the right side of the road
+                Vector3 direction = (ctrl.currentTarget - roverGO.transform.position).normalized;
+                Vector3 ortho = Vector3.Cross(direction, Vector3.up).normalized;
+                Vector3 offset = ortho * 1.5f; // Adjust the offset as needed
+                ctrl.currentTarget -= offset;
+                
+                print("Initialized Rover heading towards node " + next + " from node " + startNode);
             }
         }
         else
@@ -74,7 +83,7 @@ public class RoverManager : MonoBehaviour
                 }
 
                 // Copy path queue and figure out first destination (second in queue)
-                print("Initialized Rover heading towards node " + data.path.ElementAt(1));
+                print("Initialized Rover heading towards node " + data.path.ElementAt(1) + " from node " + s);
                 int next = data.path.ElementAt(1);
 
                 // Instantiate rover

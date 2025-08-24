@@ -18,7 +18,7 @@ public class RoverDriver : MonoBehaviour
     Rigidbody rb;
     GridMapGenerator map;
     public Rover rover;
-    Vector3 currentTarget;
+    public Vector3 currentTarget;
     TrashFinder trashFinder;
     Vector3 previousPos = Vector3.zero;
     SimManager simManager;
@@ -60,22 +60,91 @@ public class RoverDriver : MonoBehaviour
 
     void RandomDrive()
     {
+        Vector3 toTarget;
         if (IsAtIntersection() && !_isTurning)
         {
             // Randomly choose to turn left, right, or go straight
             int choice = UnityEngine.Random.Range(0, 3); // 0: left, 1: straight, 2: right
-
-            if (choice == 0)
-                StartCoroutine(TurnLeftNinety());
-            else if (choice == 2)
-                StartCoroutine(TurnRightNinety());
-            else
-                StartCoroutine(CrossIntersection());
+            SetNextTargetAndTurn(choice);
         }
 
-        // Move forward continuously
+        // Move towards next target
+        toTarget = currentTarget - rb.position;
+        Vector3 nextTrashPath = trashFinder.driveToPos;
+        Vector3 dispToPos = Vector3.zero;
+
+        Vector3 roverPos;
+        // calculate orthogonal normalized vector to rover's forward direction
+        Vector3 ortho = Vector3.Cross(transform.forward, Vector3.up).normalized;
+        Vector3 offset = ortho * 0.2f;
+        roverPos = rb.position - offset;
+
+        if (nextTrashPath != previousPos)
+        {
+            dispToPos = nextTrashPath - roverPos;
+        }
+        Debug.DrawRay(roverPos, dispToPos, Color.green);
+
+        // If there's a trash target and it's not too close
+        if (nextTrashPath != Vector3.zero && dispToPos.magnitude > 1f && Vector3.Angle(transform.forward, dispToPos) > 0f)
+        {
+            previousPos = nextTrashPath;
+            if (!_isAdjusting)
+                StartCoroutine(AdjustCourse(dispToPos)); // Start adjusting course towards the trash
+        }
+
+        // Move towards the target
         Vector3 forward = transform.forward * moveSpeed * Time.fixedDeltaTime;
         rb.MovePosition(rb.position + forward);
+
+        // Adjust rover if slightly off course
+        float distError = Math.Abs(toTarget.x) <= Math.Abs(toTarget.z) ? toTarget.x : toTarget.z;
+
+        if (
+            (Math.Abs(distError) >0.1f ||
+            (toTarget.magnitude <= 0.5f && Vector3.Angle(transform.forward, currentTarget - rb.position) > 3f)) && !_isAdjusting && !_isTurning
+            )
+        {
+            StartCoroutine(AdjustCourse(currentTarget - rb.position));
+        }
+
+        // Debug/Visualization lines
+        Debug.DrawLine(rb.position, currentTarget, Color.red);
+        if (_isAdjusting)
+            Debug.DrawRay(rb.position, (currentTarget - rb.position).normalized * 3f, Color.blue);
+    }
+
+    void SetNextTargetAndTurn(int choice)
+    {
+        Vector3 direction;
+        if (choice == 0) // left
+            direction = Quaternion.Euler(0, -90, 0) * (currentTarget - rb.position).normalized;
+        else if (choice == 2) // right
+            direction = Quaternion.Euler(0, 90, 0) * (currentTarget - rb.position).normalized;
+        else // straight
+            direction = (currentTarget - rb.position).normalized;
+
+        RaycastHit hit;
+        if (Physics.Raycast(rb.position, direction, out hit, 10f))
+        {
+            if (hit.collider.CompareTag("Intersection"))
+            {
+                currentTarget = hit.collider.transform.position;
+
+                // Shift currentTarget to the right side of the road
+                Vector3 ortho = Vector3.Cross(direction, Vector3.up).normalized; // FIX THIS LATER
+                Vector3 offset = ortho * 1.5f; // Adjust the offset as needed
+                currentTarget -= offset;
+            }
+        }
+
+        // execute turn
+        if (choice == 0)
+            StartCoroutine(TurnLeftNinety());
+        else if (choice == 2)
+            StartCoroutine(TurnRightNinety());
+        else
+            StartCoroutine(CrossIntersection());
     }
     
     void FollowPath()
@@ -135,8 +204,6 @@ public class RoverDriver : MonoBehaviour
 
         // Adjust rover if slightly off course
         float distError = Math.Abs(toTarget.x) <= Math.Abs(toTarget.z) ? toTarget.x : toTarget.z;
-        // print($"Distance Error: {distError}");
-        Debug.DrawLine(rb.position, currentTarget, Color.red);
 
         if (
             (Math.Abs(distError) >0.1f ||
@@ -146,6 +213,8 @@ public class RoverDriver : MonoBehaviour
             StartCoroutine(AdjustCourse(currentTarget - rb.position));
         }
 
+        // Debug/Visualization lines
+        Debug.DrawLine(rb.position, currentTarget, Color.red);
         if (_isAdjusting)
             Debug.DrawRay(rb.position, (currentTarget - rb.position).normalized * 3f, Color.blue);
     }
