@@ -27,7 +27,7 @@ namespace Sim.Rover
         {
             if (graph == null || !graph.ContainsVertex(startNode) || !graph.ContainsVertex(goalNode))
             {
-                Debug.LogError("Graph not assigned or invalid nodes");
+                Debug.Log("Graph not assigned, invalid nodes, or no goal node assigned.");
                 return false;
             }
 

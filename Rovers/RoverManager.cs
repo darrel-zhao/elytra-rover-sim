@@ -31,8 +31,12 @@ public class RoverManager : MonoBehaviour
     public void AssignPathsandStart(List<(int start, int end)> assignments, int numberOfRovers)
     {
         numRovers = numberOfRovers;
+        roverCameras = new List<Camera>();
 
-        if (assignments == null || assignments.Count == 0)
+        randomSpawn = assignments == null || assignments.Count == 0;
+
+        // No start/end assignments, so spawn randomly
+        if (randomSpawn)
         {
             for (int i = 0; i < numRovers; i++)
             {
@@ -49,38 +53,38 @@ public class RoverManager : MonoBehaviour
 
                 SpawnRover(startNode, next, out roverGO);
                 var ctrl = roverGO.GetComponent<RoverDriver>();
+                var data = new Rover(i, startNode, -1, map.graph); // -1 indicates no goal
 
-                ctrl.Init(map, null);
+                ctrl.Init(map, data);
             }
-
-            return;
         }
-
-        roverCameras = new List<Camera>();
-        for (int i = 0; i < numRovers; i++)
+        else
         {
-            // Create rover instance
-            var (s, e) = assignments[i];
-            var data = new Rover(i, s, e, map.graph);
-
-            // Have rover compute its path
-            if (!data.ComputePath(s, e))
+            for (int i = 0; i < numRovers; i++)
             {
-                Debug.LogError($"No path for rover {i} from {s} to {e}.");
-                return;
+                // Create rover instance
+                var (s, e) = assignments[i];
+                var data = new Rover(i, s, e, map.graph);
+
+                // Have rover compute its path
+                if (!data.ComputePath(s, e))
+                {
+                    Debug.LogError($"No path for rover {i} from {s} to {e}.");
+                    return;
+                }
+
+                // Copy path queue and figure out first destination (second in queue)
+                print("Initialized Rover heading towards node " + data.path.ElementAt(1));
+                int next = data.path.ElementAt(1);
+
+                // Instantiate rover
+                GameObject roverGO;
+                SpawnRover(s, next, out roverGO);
+                var ctrl = roverGO.GetComponent<RoverDriver>();
+                if (ctrl == null) { Debug.LogError($"RoverDriver component missing on {roverGO.name}."); }
+
+                ctrl.Init(map, data);
             }
-
-            // Copy path queue and figure out first destination (second in queue)
-            print("Initialized Rover heading towards node " + data.path.ElementAt(1));
-            int next = data.path.ElementAt(1);
-
-            // Instantiate rover
-            GameObject roverGO;
-            SpawnRover(s, next, out roverGO);
-            var ctrl = roverGO.GetComponent<RoverDriver>();
-            if (ctrl == null) { Debug.LogError($"RoverDriver component missing on {roverGO.name}."); }
-
-            ctrl.Init(map, data);
         }
 
         OnRoversInitialized?.Invoke();

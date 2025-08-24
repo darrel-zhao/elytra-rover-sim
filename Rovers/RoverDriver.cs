@@ -30,10 +30,6 @@ public class RoverDriver : MonoBehaviour
         // Get map and rover data
         map = mapRef;
         rover = roverData;
-        if (rover == null)
-        {
-            randomDrive = true;
-        }
 
         trashFinder = GetComponentInChildren<TrashFinder>();
         simManager = FindFirstObjectByType<SimManager>();
@@ -43,8 +39,12 @@ public class RoverDriver : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
 
-        // Prep the first destination
-        AdvanceWaypoint();
+        if (rover.path.Count == 0)
+            randomDrive = true;
+        else
+            // Prep the first destination
+            AdvanceWaypoint();
+
         active = true;
     }
 
